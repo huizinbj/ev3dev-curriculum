@@ -90,9 +90,10 @@ def main():
     while time_s != 0:
         x = int(input("Enter a speed (0 to 900 dps): "))
         distance = int(input("Enter a distance to drive (inches): "))
+        time_s = (distance * 70 / x)
         left_motor.run_forever(speed_sp=x)
         right_motor.run_forever(speed_sp=x)
-        time.sleep((distance * 70) / x)
+        time.sleep(time_s)
         left_motor.stop()
         right_motor.stop(stop_action="brake")
 
