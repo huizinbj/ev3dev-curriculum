@@ -13,7 +13,6 @@
 
 import ev3dev.ev3 as ev3
 
-
 class Snatch3r(object):
     """Commands for the Snatch3r robot that might be useful in many
     different programs."""
@@ -29,10 +28,20 @@ class Snatch3r(object):
     def drive_inches(self, inches, speed):
         """ Drives motors given inches and speed """
         pos = inches * 90
-        print('pos = ', pos)
-        self.left_motor.run_to_rel_pos(position_sp=pos, speed_sp=speed,
+        self.left_motor.run_to_rel_pos(position_sp=pos, speed_sp=-speed,
                                        stop_action="brake")
-        self.right_motor.run_to_rel_pos(position_sp=pos, speed_sp=speed,
+        self.right_motor.run_to_rel_pos(position_sp=pos, speed_sp=-speed,
+                                        stop_action="brake")
+        self.left_motor.wait_while(ev3.Motor.STATE_RUNNING)
+        self.right_motor.wait_while(ev3.Motor.STATE_RUNNING)
+
+    def turn_degrees(self, degrees_to_turn, turn_speed_sp):
+        pos = degrees_to_turn * 4.5
+        self.left_motor.run_to_rel_pos(position_sp=-pos,
+                                       speed_sp=turn_speed_sp,
+                                       stop_action="brake")
+        self.right_motor.run_to_rel_pos(position_sp=pos,
+                                        speed_sp=turn_speed_sp,
                                         stop_action="brake")
         self.left_motor.wait_while(ev3.Motor.STATE_RUNNING)
         self.right_motor.wait_while(ev3.Motor.STATE_RUNNING)
