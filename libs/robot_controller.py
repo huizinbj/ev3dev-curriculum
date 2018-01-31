@@ -18,6 +18,12 @@ import time
 
 class Snatch3r(object):
     """Commands for the Snatch3r robot that might be useful in many different programs."""
-    
+
+    def __init__(self):
+        self.xxx =
+        self.zzz =
+
+        assert self.xxx.conected
+        assert self.yyy.conected
     # TODO: Implement the Snatch3r class as needed when working the sandox exercises
     # (and delete these comments)
