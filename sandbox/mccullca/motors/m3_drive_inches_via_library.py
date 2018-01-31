@@ -7,7 +7,8 @@ constructor and a method called drive_inches.
 Authors: David Fisher and Team 34.
 """  # done: 1. PUT YOUR NAME IN THE ABOVE LINE.
 
-# TODO: 2. On your computer right click on the libs folder in PyCharm, select Mark Directory as... Sources Root
+# done: 2. On your computer right click on the libs folder in PyCharm, select
+# Mark Directory as... Sources Root
 #   That should fix the error on the import robot_controller as robo line below (expand the imports below)
 #   Marking that folder as a Source Root will allow any module in that folder to be used globally in this project.
 #   Note, when that folder is uploaded to the EV3, it wil be in the folder /home/robot/csse120/libs
@@ -56,6 +57,7 @@ def main():
         if inches_target == 0:
             break
 
+        print('test print')
         robot.drive_inches(inches_target, speed_deg_per_second)
         ev3.Sound.beep().wait()  # Fun little beep
 
