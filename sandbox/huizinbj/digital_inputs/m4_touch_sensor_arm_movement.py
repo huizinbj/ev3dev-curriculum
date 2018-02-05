@@ -26,22 +26,22 @@ def main():
     assert arm_motor.connected
 
     touch_sensor = ev3.TouchSensor()
-    assert touch_sensor
+    assert touch_sensor.connected
 
     while True:
         command_to_run = input("Enter c (for calibrate), u (for up), d (for down), or q (for quit): ")
         if command_to_run == 'c':
             print("Calibrate the arm")
-            print("TODO: 3 is to delete this print statement, uncomment the line below, and implement that function.")
+
             arm_calibration(arm_motor, touch_sensor)
         elif command_to_run == 'u':
             print("Move the arm to the up position")
-            print("TODO: 4 is to delete this print statement, uncomment the line below, and implement that function.")
-            # arm_up(arm_motor, touch_sensor)
+
+            arm_up(arm_motor, touch_sensor)
         elif command_to_run == 'd':
             print("Move the arm to the down position")
-            print("TODO: 5 is to delete this print statement, uncomment the line below, and implement that function.")
-            # arm_down(arm_motor)
+
+            arm_down(arm_motor)
         elif command_to_run == 'q':
             break
         else:
@@ -77,14 +77,15 @@ def arm_calibration(arm_motor, touch_sensor):
 
 
     arm_motor.run_forever(speed_sp=MAX_SPEED)
-    while not touch_sensor:
+    while not touch_sensor.is_pressed:
         time.sleep(0.01)
         print('In loop')
     arm_motor.stop(stop_action='brake')
     ev3.Sound.beep()
 
     arm_revolutions_for_full_range = 14.2
-    arm_motor.run_to_rel_pos(position_sp=-arm_revolutions_for_full_range*360)
+    arm_motor.run_to_rel_pos(
+        position_sp=-arm_revolutions_for_full_range*360, speed_sp=MAX_SPEED)
     arm_motor.wait_while(ev3.Motor.STATE_RUNNING)
     ev3.Sound.beep()
 
@@ -107,8 +108,9 @@ def arm_up(arm_motor, touch_sensor):
     # Make a beep sound
 
     # Code that attempts to do this task but has many bugs.  Fix them!
+    print('In Up code')
     arm_motor.run_forever(speed_sp=MAX_SPEED)
-    while not touch_sensor:
+    while not touch_sensor.is_pressed:
         time.sleep(0.01)
     arm_motor.stop(stop_action='brake')
     ev3.Sound.beep()
@@ -128,8 +130,7 @@ def arm_down(arm_motor):
 
     # Code that attempts to do this task but has bugs.  Fix them.
 
-    arm_revolutions_for_full_range = 14.2
-    arm_motor.run_to_abs_pos(position_sp =-arm_revolutions_for_full_range*360 )
+    arm_motor.run_to_abs_pos(position_sp =0 )
     arm_motor.wait_while(ev3.Motor.STATE_RUNNING)# Blocks until the motor finishes
     #  running
     ev3.Sound.beep()

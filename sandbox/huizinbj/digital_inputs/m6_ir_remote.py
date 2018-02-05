@@ -157,40 +157,50 @@ def handle_red_up_1(button_state, robot):
     """
    Drives 600 speed
     """
-    while button_state:
-        robot.left_motor.run_forever(speed_sp=600)
-        ev3.Leds.set_color(ev3.Leds.LEFT, ev3.Leds.GREEN)
-    ev3.Leds.set_color(ev3.Leds.LEFT, ev3.Leds.BLACK)
+    robot.left_motor.run_forever(speed_sp=600)
+    ev3.Leds.set_color(ev3.Leds.LEFT, ev3.Leds.GREEN)
+    time.sleep(0.01)
+
+    if not button_state:
+        ev3.Leds.set_color(ev3.Leds.LEFT, ev3.Leds.BLACK)
+        robot.left_motor.stop(stop_action='brake')
 
 
 def handle_red_down_1(button_state, robot):
     """
    Drives 600 speed
     """
-    while button_state:
-        robot.left_motor.run_forever(speed_sp=-600)
-        ev3.Leds.set_color(ev3.Leds.LEFT, ev3.Leds.RED)
-    ev3.Leds.set_color(ev3.Leds.LEFT, ev3.Leds.BLACK)
+
+    robot.left_motor.run_forever(speed_sp=-600)
+    ev3.Leds.set_color(ev3.Leds.LEFT, ev3.Leds.RED)
+
+    if not button_state:
+        robot.left_motor.stop(stop_action='brake')
+        ev3.Leds.set_color(ev3.Leds.LEFT, ev3.Leds.BLACK)
 
 
 def handle_blue_up_1(button_state, robot):
     """
    Drives 600 speed
     """
-    while button_state:
-        robot.right_motor.run_forever(speed_sp=600)
-        ev3.Leds.set_color(ev3.Leds.RIGHT, ev3.Leds.GREEN)
-    ev3.Leds.set_color(ev3.Leds.LEFT, ev3.Leds.BLACK)
+
+    robot.right_motor.run_forever(speed_sp=600)
+    ev3.Leds.set_color(ev3.Leds.RIGHT, ev3.Leds.GREEN)
+    if not button_state:
+        ev3.Leds.set_color(ev3.Leds.LEFT, ev3.Leds.BLACK)
+        robot.right_motor.stop(stop_action='brake')
 
 
 def handle_blue_down_1(button_state, robot):
     """
    Drives 600 speed
     """
-    while button_state:
-        robot.right_motor.run_forever(speed_sp=-600)
-        ev3.Leds.set_color(ev3.Leds.RIGHT, ev3.Leds.RED)
-    ev3.Leds.set_color(ev3.Leds.LEFT, ev3.Leds.BLACK)
+
+    robot.right_motor.run_forever(speed_sp=-600)
+    ev3.Leds.set_color(ev3.Leds.RIGHT, ev3.Leds.RED)
+    if not button_state:
+        ev3.Leds.set_color(ev3.Leds.LEFT, ev3.Leds.BLACK)
+        robot.right_motor.stop(stop_action='brake')
 
 
 # ----------------------------------------------------------------------
