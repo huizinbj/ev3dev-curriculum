@@ -187,7 +187,7 @@ def handle_blue_up_1(button_state, robot):
     robot.right_motor.run_forever(speed_sp=600)
     ev3.Leds.set_color(ev3.Leds.RIGHT, ev3.Leds.GREEN)
     if not button_state:
-        ev3.Leds.set_color(ev3.Leds.LEFT, ev3.Leds.BLACK)
+        ev3.Leds.set_color(ev3.Leds.RIGHT, ev3.Leds.BLACK)
         robot.right_motor.stop(stop_action='brake')
 
 
@@ -199,7 +199,7 @@ def handle_blue_down_1(button_state, robot):
     robot.right_motor.run_forever(speed_sp=-600)
     ev3.Leds.set_color(ev3.Leds.RIGHT, ev3.Leds.RED)
     if not button_state:
-        ev3.Leds.set_color(ev3.Leds.LEFT, ev3.Leds.BLACK)
+        ev3.Leds.set_color(ev3.Leds.RIGHT, ev3.Leds.BLACK)
         robot.right_motor.stop(stop_action='brake')
 
 
