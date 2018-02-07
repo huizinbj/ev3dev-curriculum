@@ -80,6 +80,7 @@ def main():
     # Create an MQTT connection
     # DONE: 5. Delete the line below (mqtt_client = None) then uncomment the
     # code below.  It creates a real mqtt client.
+
     my_delegate = MyDelegate(canvas)
     mqtt_client = com.MqttClient(my_delegate)
     mqtt_client.connect("draw", "draw")
@@ -95,9 +96,9 @@ def left_mouse_click(event, mqtt_client):
     """ Draws a circle onto the canvas (one way or another). """
     print("You clicked location ({},{})".format(event.x, event.y))
 
-    # TODO: 6. Talk to your team members and have everyone pick a unique color.
+    # Done: 6. Talk to your team members and have everyone pick a unique color.
     # Examples... "red", "green", "blue", "yellow", "aquamarine", "magenta", "navy", "orange"
-    my_color = "magenta"  # Make your color unique
+    my_color = "red"  # Make your color unique
 
     # Optional test: If you just want to see circles purely local to your computer the four lines below would work.
     # You could uncomment it to see it temporarily, but make sure to comment it back out before todo7 below.
@@ -106,25 +107,22 @@ def left_mouse_click(event, mqtt_client):
     #                    event.x + 10, event.y + 10,
     #                    fill=my_color, width=3)
     # Repeated: If you uncommented the code above to test it, make sure to comment it back out before todo7 below.
-    parameters = [my_color, event.x, event.y]
-    # MQTT draw
-    # TODO: 7. Send a message using MQTT that will:
-    mqtt_client = com.MqttClient()
-    mqtt_client.connect_to_ev3()
 
-    mqtt_client.send_message("on_circle_draw", parameters)
+    # MQTT draw
+    # Done: 7. Send a message using MQTT that will:
     #   - Call the method called "on_circle_draw" on the delegate at the other end of the pipe.
     #   - Pass the parameters [my_color, event.x, event.y] as a list.
     # This is the only TO DO you have to think about.  It is meant to help you learn the mqtt_client.send_message syntax
     # Review the lecture notes about the two parameters passed into the mqtt_client.send_message method if needed
     # All of your teammates should receive the message and create a circle of your color at your click location.
     # Additionally you will receive your own message and draw a circle in your color too.
-
-    # TODO: 8. Help get everyone on your team running this program at the same time.
+    mqtt_client.send_message("on_circle_draw", [my_color, event.x, event.y])
+    # Done: 8. Help get everyone on your team running this program at the same
+    # time.
     # You should be able to see circles on your computer from everyone else on your team.
     # Try to draw the first letter of your name in circles. :)
 
-    # TODO: 9. Call over a TA or instructor to sign your team's checkoff sheet.
+    # Done: 9. Call over a TA or instructor to sign your team's checkoff sheet.
     #
     # Observations you should make, with MQTT your team can hear your messages.
     # You published messages to the "legoXX/draw" topic (where XX is the number set in libs/mqtt_remote_method_calls.py)
