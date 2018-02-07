@@ -7,13 +7,14 @@ This module will work exactly the same as the prior module but will do that work
 Authors: David Fisher and Group 34.
 """  # Done: 1. PUT YOUR NAME IN THE ABOVE LINE.
 
-# Done: 2. Have everyone talk about this problem together then pick one team
+# Donec: 2. Have everyone talk about this problem together then pick one team
 # member to modify libs/robot_controller.py
 # as necessary to make the code below perform the same task as the prior module. Once the code has been tested and shown
 # to work, then have that person commit their work.  All other team members need to do a VCS --> Update project...
 # Once the library is implemented each team member should be able to run their version of this code on the robot.
 
-# TODO: 3. Call over a TA or instructor to sign your team's checkoff sheet and do a code review of your library.
+# DONE: 3. Call over a TA or instructor to sign your team's checkoff sheet and
+# do a code review of your library.
 #
 # Observations you should make, you are a TEAM and making great library methods will make life easier for everyone.
 

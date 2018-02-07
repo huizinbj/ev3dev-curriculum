@@ -76,7 +76,6 @@ def arm_calibration(arm_motor, touch_sensor):
 
     # Code that attempts to do this task but has MANY bugs (nearly 1 on every line).  Fix them!
 
-
     arm_motor.run_forever(speed_sp=MAX_SPEED)
     while not touch_sensor.is_pressed:
         time.sleep(0.01)
@@ -131,7 +130,7 @@ def arm_down(arm_motor):
 
     # Code that attempts to do this task but has bugs.  Fix them.
 
-    arm_motor.run_to_abs_pos(position_sp =0 )
+    arm_motor.run_to_abs_pos(position_sp=0)
     arm_motor.wait_while(ev3.Motor.STATE_RUNNING)# Blocks until the motor finishes
     #  running
     ev3.Sound.beep()

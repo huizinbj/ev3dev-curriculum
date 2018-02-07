@@ -142,7 +142,7 @@ def main():
 # ----------------------------------------------------------------------
 # Tkinter callbacks
 # ----------------------------------------------------------------------
-# TODO: 4. Implement the functions for the drive button callbacks.
+# DONE: 4. Implement the functions for the drive button callbacks.
 
 # TODO: 5. Call over a TA or instructor to sign your team's checkoff sheet and do a code review.  This is the final one!
 #
@@ -169,6 +169,7 @@ def quit_program(mqtt_client, shutdown_ev3):
     mqtt_client.close()
     exit()
 
+
 def send_forward(mqtt_client, left_speed, right_speed):
     print("drive_forward")
     mqtt_client.send_message("drive_forward", [left_speed, right_speed])
@@ -178,13 +179,16 @@ def stopbot(mqtt_client):
     print("stop")
     mqtt_client.send_message("stop")
 
+
 def send_back(mqtt_client, left_speed, right_speed):
     print("drive_back")
     mqtt_client.send_message("drive_forward", [-left_speed, -right_speed])
 
+
 def send_left(mqtt_client, left_speed, right_speed):
     print("drive_left")
     mqtt_client.send_message("drive_forward", [-left_speed, right_speed])
+
 
 def send_right(mqtt_client, left_speed, right_speed):
     print("drive_right")

@@ -105,9 +105,9 @@ class Snatch3r(object):
         self.right_motor.stop(stop_action='brake')
 
     def drive_forward(self, leftspeed, rightspeed):
-        print('sanity check')
         self.left_motor.run_forever(speed_sp=leftspeed)
         self.right_motor.run_forever(speed_sp=rightspeed)
+
 
 
 
