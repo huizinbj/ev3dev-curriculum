@@ -13,6 +13,7 @@
 
 import ev3dev.ev3 as ev3
 import time
+import math
 
 
 class Snatch3r(object):
@@ -28,13 +29,14 @@ class Snatch3r(object):
         self.running = True
         self.color_sensor = ev3.ColorSensor()
         self.ir_sensor = ev3.InfraredSensor()
+        self.beacon_seeker = ev3.BeaconSeeker(channel=1)
 
         assert self.arm_motor.connected
         assert self.left_motor.connected
         assert self.right_motor.connected
         assert self.touch_sensor.connected
         assert self.color_sensor.connected
-        assert  self.ir_sensor.connected
+        assert self.ir_sensor.connected
 
     def drive_inches(self, inches, speed):
         """ Drives motors given inches and speed """
@@ -111,6 +113,72 @@ class Snatch3r(object):
     def drive_forward(self, leftspeed, rightspeed):
         self.left_motor.run_forever(speed_sp=leftspeed)
         self.right_motor.run_forever(speed_sp=rightspeed)
+
+    def seek_beacon(self):
+        """
+        Uses the IR Sensor in BeaconSeeker mode to find the beacon.  If the beacon is found this return True.
+        If the beacon is not found and the attempt is cancelled by hitting the touch sensor, return False.
+
+        Type hints:
+          :type robot: robo.Snatch3r
+          :rtype: bool
+        """
+
+
+
+        forward_speed = 300
+        turn_speed = 100
+
+        while not self.touch_sensor.is_pressed:
+            current_heading = self.beacon_seeker.heading  # use the
+            # beacon_seeker heading
+            current_distance = self.beacon_seeker.distance  # use the
+            # beacon_seeker distance
+            if current_distance == -128:
+                # If the IR Remote is not found just sit idle for this program until it is moved.
+                print("IR Remote not found. Distance is -128")
+                self.stop()
+            else:
+
+                if math.fabs(current_heading) < 2:
+                    print("On the right heading. Distance: ", current_distance)
+                    if current_distance < 10:
+                        print("Driving forward to beacon")
+                        self.drive_forward(forward_speed, forward_speed)
+                        time.sleep(0.01)
+
+                    if math.fabs(current_distance) <= 1:
+                        self.stop()
+                        time.sleep(0.1)
+                        print("Found Beacon", current_distance)
+                        self.drive_inches(4, 200)
+                        return True
+
+                if math.fabs(current_heading) > 2 and math.fabs(
+                        current_heading) \
+                        < 10:
+                    print("Robot Needs to turn")
+                    if current_heading < 1:
+                        print("Turn left")
+                        print(current_heading, "left")
+                        self.drive_forward(-turn_speed, turn_speed)
+                        time.sleep(0.01)
+                    if current_heading > 1:
+                        print("Turn Right")
+                        print(current_heading, "right")
+                        self.drive_forward(turn_speed, -turn_speed)
+                        time.sleep(0.01)
+                    time.sleep(0.01)
+                if math.fabs(current_heading) > 10:
+                    self.stop()
+                    print(current_heading)
+                    print("Heading to far off")
+
+            time.sleep(0.02)
+
+        print("Abandon ship!")
+        self.stop()
+        return False
 
 
 

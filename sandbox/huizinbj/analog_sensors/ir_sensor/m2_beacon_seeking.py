@@ -29,15 +29,15 @@ def main():
     robot = robo.Snatch3r()
     try:
         while True:
-            seek_beacon(robot)
+            found =seek_beacon(robot)
 
             # TODO: 5. Save the result of the seek_beacon function (a bool), then use that value to only say "Found the
             # beacon" if the return value is True.  (i.e. don't say "Found the beacon" if the attempts was cancelled.)
-            ev3.Sound.speak("Found the beacon")
-
-            command = input("Hit enter to seek the beacon again or enter q to quit: ")
-            if command == "q":
-                break
+            if found:
+                ev3.Sound.speak("Found the beacon")
+                command = input("Hit enter to seek the beacon again or enter q to quit: ")
+                if command == "q":
+                    break
     except:
         traceback.print_exc()
         ev3.Sound.speak("Error")
@@ -91,29 +91,44 @@ def seek_beacon(robot):
             #    print("Adjusting heading: ", current_heading)
             #    print("Heading is too far off to fix: ", current_heading)
 
-            # Here is some code to help get you started
+            # Close enough of a heading to move forward
             if math.fabs(current_heading) < 2:
-                # Close enough of a heading to move forward
                 print("On the right heading. Distance: ", current_distance)
-                # You add more!
-                while not current_distance < 10:
+                if current_distance < 10:
                     print("Driving forward to beacon")
                     robot.drive_forward(forward_speed, forward_speed)
-                print("Found Beacon", current_distance)
-                robot.stop()
-                if math.fabs(current_distance) == 0:
+                    time.sleep(0.01)
+
+
+                if math.fabs(current_distance) <= 1:
+
+                    robot.stop()
+                    time.sleep(0.1)
+                    print("Found Beacon", current_distance)
+                    robot.drive_inches(4,200)
                     return True
-            #
-            # if math.fabs(current_heading) > 2 and math.fabs(current_heading)\
-            #         < 10:
+
+            if math.fabs(current_heading) > 2 and math.fabs(current_heading)\
+                    < 10:
+                print("Robot Needs to turn")
+                if current_heading < 1:
+                    print("Turn left")
+                    print(current_heading, "left")
+                    robot.drive_forward(-turn_speed, turn_speed)
+                    time.sleep(0.01)
+                if current_heading > 1:
+                    print("Turn Right")
+                    print(current_heading, "right")
+                    robot.drive_forward(turn_speed, -turn_speed)
+                    time.sleep(0.01)
+                time.sleep(0.01)
+            if math.fabs(current_heading) > 10:
+                robot.stop()
+                print(current_heading)
+                print("Heading to far off")
 
 
-
-
-
-
-
-        time.sleep(0.2)
+        time.sleep(0.02)
 
     # The touch_sensor was pressed to abort the attempt if this code runs.
     print("Abandon ship!")
