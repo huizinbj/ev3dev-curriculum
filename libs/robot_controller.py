@@ -21,7 +21,10 @@ class Snatch3r(object):
     different programs."""
 
     def __init__(self):
-        """ creates motors """
+        """
+        Creates motors and sensors for the Snatcher and makes sure they
+        are connected.
+        """
         self.left_motor = ev3.LargeMotor(ev3.OUTPUT_B)
         self.right_motor = ev3.LargeMotor(ev3.OUTPUT_C)
         self.touch_sensor = ev3.TouchSensor()
@@ -39,7 +42,9 @@ class Snatch3r(object):
         assert self.ir_sensor.connected
 
     def drive_inches(self, inches, speed):
-        """ Drives motors given inches and speed """
+        """
+        Drives motors the given inches and the given speed
+        """
         pos = inches * 90
         self.left_motor.run_to_rel_pos(position_sp=pos, speed_sp=-speed,
                                        stop_action="brake")
@@ -60,13 +65,16 @@ class Snatch3r(object):
         self.right_motor.wait_while(ev3.Motor.STATE_RUNNING)
 
     def arm_calibration(self):
-
+        """
+        Calibrates the Snatcher arm sending it upwards and downwards and
+        sets the arm_motor.position to 0.
+        :return:
+        """
         self.arm_motor.run_forever(speed_sp=900)
         while not self.touch_sensor.is_pressed:
             time.sleep(0.01)
         self.arm_motor.stop(stop_action='brake')
         ev3.Sound.beep()
-
         arm_revolutions_for_full_range = 14.2
         self.arm_motor.run_to_rel_pos(
             position_sp=-arm_revolutions_for_full_range*360, speed_sp=900)
@@ -76,7 +84,10 @@ class Snatch3r(object):
         self.arm_motor.position = 0
 
     def arm_up(self):
-
+        """
+        Sends the Snatcher arm to the upward position.
+        :return:
+        """
         self.arm_motor.run_forever(speed_sp=900)
         while not self.touch_sensor.is_pressed:
             time.sleep(0.01)
@@ -84,7 +95,9 @@ class Snatch3r(object):
         ev3.Sound.beep()
 
     def arm_down(self):
-        arm_revolutions_for_full_range = 14.2
+        """
+        Sends the Snatcher arm to the downward position.
+        """
         self.arm_motor.run_to_abs_pos(
             position_sp=0, speed_sp=900)
         self.arm_motor.wait_while(
@@ -92,6 +105,12 @@ class Snatch3r(object):
         ev3.Sound.beep()
 
     def shutdown(self):
+        """
+       Shuts down the Snatcher by killing all motors, turning off the Led's
+       printing "Goodbye" and sets self.running to False to kill an mqtt
+       client.
+       :return self.running False
+       """
         self.running = False
         ev3.Leds.set_color(ev3.Leds.LEFT, ev3.Leds.GREEN)
         ev3.Leds.set_color(ev3.Leds.RIGHT, ev3.Leds.GREEN)
@@ -102,44 +121,46 @@ class Snatch3r(object):
         ev3.Sound.speak('Goodbye')
 
     def loop_forever(self):
+        """
+        Used for mqtt clients  within the Snatcher to make the robot
+        constantly send and receive data.
+        :return: self.running
+        """
         self.running = True
         while self.running:
             time.sleep(0.1)
 
     def stop(self):
+        """
+        Stops the Snatchers motors to cease them from moving.
+        """
         self.left_motor.stop(stop_action='brake')
         self.right_motor.stop(stop_action='brake')
 
     def drive_forward(self, leftspeed, rightspeed):
+        """
+        Drives the Snatcher forward at the given input speeds.
+        Can also be use for turning if one speed is greater than the other.
+        """
         self.left_motor.run_forever(speed_sp=leftspeed)
         self.right_motor.run_forever(speed_sp=rightspeed)
 
     def seek_beacon(self):
         """
-        Uses the IR Sensor in BeaconSeeker mode to find the beacon.  If the beacon is found this return True.
-        If the beacon is not found and the attempt is cancelled by hitting the touch sensor, return False.
-
-        Type hints:
-          :type robot: robo.Snatch3r
-          :rtype: bool
+        Uses the IR Sensor in BeaconSeeker mode to find the beacon.
+        If the beacon is found this return True.
+        If the beacon is not found and the attempt is cancelled by hitting
+        the touch sensor, return False.
         """
-
-
-
         forward_speed = 300
         turn_speed = 100
-
         while not self.touch_sensor.is_pressed:
-            current_heading = self.beacon_seeker.heading  # use the
-            # beacon_seeker heading
-            current_distance = self.beacon_seeker.distance  # use the
-            # beacon_seeker distance
+            current_heading = self.beacon_seeker.heading
+            current_distance = self.beacon_seeker.distance
             if current_distance == -128:
-                # If the IR Remote is not found just sit idle for this program until it is moved.
                 print("IR Remote not found. Distance is -128")
                 self.stop()
             else:
-
                 if math.fabs(current_heading) < 2:
                     print("On the right heading. Distance: ", current_distance)
                     if current_distance < 10:
@@ -153,7 +174,6 @@ class Snatch3r(object):
                         print("Found Beacon", current_distance)
                         self.drive_inches(4, 200)
                         return True
-
                 if math.fabs(current_heading) > 2 and math.fabs(
                         current_heading) \
                         < 10:
@@ -173,9 +193,7 @@ class Snatch3r(object):
                     self.stop()
                     print(current_heading)
                     print("Heading to far off")
-
             time.sleep(0.02)
-
         print("Abandon ship!")
         self.stop()
         return False
