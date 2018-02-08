@@ -27,12 +27,14 @@ class Snatch3r(object):
         self.arm_motor = ev3.MediumMotor(ev3.OUTPUT_A)
         self.running = True
         self.color_sensor = ev3.ColorSensor()
+        self.ir_sensor = ev3.InfraredSensor()
 
         assert self.arm_motor.connected
         assert self.left_motor.connected
         assert self.right_motor.connected
         assert self.touch_sensor.connected
         assert self.color_sensor.connected
+        assert  self.ir_sensor.connected
 
     def drive_inches(self, inches, speed):
         """ Drives motors given inches and speed """
