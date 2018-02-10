@@ -37,6 +37,7 @@ class Snatch3r(object):
         self.color_sensor = ev3.ColorSensor()
         self.ir_sensor = ev3.InfraredSensor()
         self.beacon_seeker = ev3.BeaconSeeker(channel=1)
+        self.pixy = ev3.Sensor(driver_name="pixy-lego")
 
         assert self.arm_motor.connected
         assert self.left_motor.connected
@@ -44,6 +45,7 @@ class Snatch3r(object):
         assert self.touch_sensor.connected
         assert self.color_sensor.connected
         assert self.ir_sensor.connected
+        assert self.pixy.connected
 
     def drive_inches(self, inches, speed):
         """
