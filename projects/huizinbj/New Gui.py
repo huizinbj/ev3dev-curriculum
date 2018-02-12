@@ -1,32 +1,53 @@
 import tkinter
 from tkinter import ttk
 from tkinter import *
+import mqtt_remote_method_calls as com
+
+
+def left_click(event):
+    print(event.x, event.y)
+    waypoint(event.x, event.y)
+
+
+
+def waypoint(x, y):
+    print(x, y)
+
+
+def prints():
+    print("Works")
 
 
 def main():
+    mqtt_client = com.MqttClient()
+    mqtt_client.connect_to_ev3()
 
-    # root = tkinter.Tk()
-    # root.title = "Pixy display"
-    #
-    # main_frame = ttk.Frame(root, padding=5)
-    # main_frame.grid()
-    #
-    # # The values from the Pixy range from 0 to 319 for the x and 0 to 199 for the y.
-    # canvas = tkinter.Canvas(main_frame, background="lightgray", width=320, height=200)
-    # canvas.grid(columnspan=2)
-    #
-    # rect_tag = canvas.create_rectangle(150, 90, 170, 110, fill="blue")
-    # Creates The G.U.I.
-    root = tkinter.Tk() # Create instance
-    root.title("Mqtt Remote")  # Add a title
-    tab_control = ttk.Notebook(root)  # Create Tab Control
+    # This Creates the Canvas
 
-    # canvas = tkinter.Tk()
-    # canvas.title("Canvas")
-    # canvas = Canvas(root, width=500, height=500)
-    # canvas.pack()
-    #
-    # canvas.create_line(0, 0, 100, 200)
+    root2 = tkinter.Tk()
+    root2.title = "Canvas"
+
+    main_frame = ttk.Frame(root2, padding=5)
+    main_frame.grid()
+
+    canvas = tkinter.Canvas(main_frame, background="lightgray", width=500,
+                            height=500)
+    canvas.grid(columnspan=2)
+    canvas.bind("<Button-1>", left_click)
+
+    quit_button = ttk.Button(main_frame, text="Quit")
+    quit_button.grid(row=3, column=1)
+    quit_button["command"] = lambda: print("Hi")
+
+    quit_button = ttk.Button(main_frame, text="Clear")
+    quit_button.grid(row=3, column=0)
+    quit_button["command"] = lambda: print("Hi")
+
+
+    # This Creates the Mqtt Remote GUI and Buttons
+    root = Tk()
+    root.title("Mqtt Remote")
+    tab_control = ttk.Notebook(root)
 
     # Creates Tab One
     tab1 = ttk.Frame(tab_control)  # Create a tab
@@ -41,11 +62,6 @@ def main():
     # Creates Tab Three
     tab3 = ttk.Frame(tab_control)
     tab_control.add(tab3, text='Program')
-    tab_control.pack(expand=2, fill="both")
-
-    # Creates Tab Four
-    tab4 = ttk.Frame(tab_control)
-    tab_control.add(tab4, text='Canvas')
     tab_control.pack(expand=2, fill="both")
 
     # Left speed box
@@ -114,17 +130,7 @@ def main():
     end_button.grid(row=1, column=0)
     end_button['command'] = (lambda: prints())
 
-
-
-
-    # # canvas = Canvas(root, width=500, height=500)
-    # canvas.pack()
-    # canvas.create_line(0, 0, 100, 200)
-    # #
-    # canvas.mainloop()
     root.mainloop()
-
-def prints():
-    print("Hi")
+    canvas.mainloop()
 
 main()
