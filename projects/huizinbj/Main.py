@@ -124,7 +124,9 @@ def main():
     # canvas.mainloop()
     root.mainloop()
 
+
 def prints():
     print("Hi")
+
 
 main()
