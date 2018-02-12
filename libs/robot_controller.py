@@ -39,6 +39,12 @@ class Snatch3r(object):
         self.beacon_seeker = ev3.BeaconSeeker(channel=1)
         self.pixy = ev3.Sensor(driver_name="pixy-lego")
 
+        self.light_level = 90
+        self.dark_level = 10
+
+        self.startx = 0
+        self.starty = 0
+
         assert self.arm_motor.connected
         assert self.left_motor.connected
         assert self.right_motor.connected
@@ -204,7 +210,33 @@ class Snatch3r(object):
         self.stop()
         return False
 
+    def calibrate_light(self):
+        """Calibrates the Color Sensor's upper bound for line-following"""
+        ev3.Sound.speak("Calibrate Light Color")
+        time.sleep(1)
+        self.light_level = self.color_sensor.reflected_light_intensity()
 
+    def calibrate_dark(self):
+        """Calibrates the Color Sensor's lower bound for line-following"""
+        ev3.Sound.speak("Calibrate Dark Color")
+        time.sleep(1)
+        self.dark_level = self.color_sensor.reflected_light_intensity()
 
+    def wave_hello(self, n):
+        """Uses the arm motor's up/down to 'wave' hello n times"""
+        for k in range(n):
+            self.arm_up()
+            time.sleep(0.1)
+            self.arm_down()
+            time.sleep(0.1)
 
+    def flex(self, n):
+        """Uses the arm motor to open/close the claw n times"""
+        for k in range(n):
+            self.arm_motor.run_to_abs_pos(position_sp=2, speed_sp=900)
+            time.sleep(0.1)
+            self.arm_motor.run_to_abs_pos(position_sp=0, speed_sp=900)
+            time.sleep(0.1)
 
+    def uturn(self):
+        self.turn_degrees(180, 300)
