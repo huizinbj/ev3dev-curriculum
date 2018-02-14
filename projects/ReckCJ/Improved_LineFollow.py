@@ -89,6 +89,7 @@ def main():
     while True:
         if robot.light_calibrated and robot.dark_calibrated:
             break
+        time.sleep(0.01)
     if robot.color_sensor.reflected_light_intensity < robot.dark_level+10:
         robot.drive_forward(300, 300)
         time.sleep(0.1)
@@ -102,6 +103,16 @@ def main():
             time.sleep(0.1)
             if robot.light_calibrated and robot.dark_calibrated:
                 break
+
+    if robot.ir_sensor.proximity < 10:
+        robot.obstructed = True
+        robot.stop()
+        ev3.Sound.speak("Obstacle")
+
+    while robot.obstructed:
+        time.sleep(0.01)
+        if robot.obstructed == False:
+            break
 
     root.mainloop()
 

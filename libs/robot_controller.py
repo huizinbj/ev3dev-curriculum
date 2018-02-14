@@ -47,6 +47,8 @@ class Snatch3r(object):
         self.x = 0
         self.y = 0
 
+        self.obstructed = False
+
         self.degrees_turned = 0
 
         assert self.arm_motor.connected
