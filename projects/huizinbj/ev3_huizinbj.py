@@ -16,18 +16,18 @@ def main():
     print("Press the touch sensor to exit this program.")
 
     # Creates Mqtt Client and Snatcher Bot
-    mqtt_client = com.MqttClient()
-    mqtt_client.connect_to_pc()
     robot = robo.Snatch3r()
-    btn = ev3.Button()
 
-    while not robot.touch_sensor.is_pressed():
-        if btn.up:
-            mqtt_client.send_message("print_robot_position", [250,
-                                                              250, mqtt_client])
+    mqtt_client2 = com.MqttClient(robot)
+    mqtt_client2.connect_to_pc()
+
+    robot.loop_forever()
 
     print("Goodbye!")
     ev3.Sound.speak("Goodbye").wait()
-    mqtt_client.close()
+    robot.stop()
+    mqtt_client2.close()
+
+
 
 main()

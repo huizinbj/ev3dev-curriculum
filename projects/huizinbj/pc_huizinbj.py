@@ -16,7 +16,7 @@ class MyDelegate(object):
 
 def main():
 
-    # This Creates the Canvas
+     # This Creates the Canvas
 
     root2 = tkinter.Tk()
     root2.title = "Canvas"
@@ -28,7 +28,14 @@ def main():
                             height=500)
     canvas.grid(columnspan=2)
 
-    canvas.bind("<Button-1>", lambda event: left_click(event, mqtt_client))
+    my_delegate = MyDelegate(canvas)
+    mqtt_client = com.MqttClient(my_delegate)
+    mqtt_client.connect("draw", "draw")
+
+    mqtt_client2 = com.MqttClient()
+    mqtt_client2.connect_to_ev3()
+
+    canvas.bind("<Button-1>", lambda event: left_click(event, mqtt_client2))
 
     # Quit Button on Canvas
     quit_button = ttk.Button(main_frame, text="Quit")
@@ -76,40 +83,40 @@ def main():
     # Forward Button on Gui
     forward_button = ttk.Button(tab1, text="Forward")
     forward_button.grid(row=2, column=1)
-    forward_button['command'] = lambda: send_forward(mqtt_client,
+    forward_button['command'] = lambda: send_forward(mqtt_client2,
                                                      int(left_speed_entry.get()
                                                          ),
                                                      int(right_speed_entry.get(
 
                                                      )))
 
-    root.bind('<Up>', lambda event: send_forward(mqtt_client,
+    root.bind('<Up>', lambda event: send_forward(mqtt_client2,
                                                  int(left_speed_entry.get()),
                                                  int(right_speed_entry.get())))
 
     # Left Button on Gui
     left_button = ttk.Button(tab1, text="Left")
     left_button.grid(row=3, column=0)
-    left_button['command'] = lambda: send_left(mqtt_client,
+    left_button['command'] = lambda: send_left(mqtt_client2,
                                                int(left_speed_entry.get()),
                                                int(right_speed_entry.get()))
-    root.bind('<Left>', lambda event: send_left(mqtt_client,
+    root.bind('<Left>', lambda event: send_left(mqtt_client2,
                                                 int(left_speed_entry.get()),
                                                 int(right_speed_entry.get())))
 
     # Stop Button On Gui
     stop_button = ttk.Button(tab1, text="Stop")
     stop_button.grid(row=3, column=1)
-    stop_button['command'] = lambda: stopbot(mqtt_client)
-    root.bind('<space>', lambda event: stopbot(mqtt_client))
+    stop_button['command'] = lambda: stopbot(mqtt_client2)
+    root.bind('<space>', lambda event: stopbot(mqtt_client2))
 
     # Right Button On Gui
     right_button = ttk.Button(tab1, text="Right")
     right_button.grid(row=3, column=2)
-    right_button['command'] = lambda: send_right(mqtt_client,
+    right_button['command'] = lambda: send_right(mqtt_client2,
                                                  int(left_speed_entry.get()),
                                                  int(right_speed_entry.get()))
-    root.bind('<Right>', lambda event: send_right(mqtt_client,
+    root.bind('<Right>', lambda event: send_right(mqtt_client2,
                                                   int(left_speed_entry.get()),
                                                   int(right_speed_entry.get()
                                                       )))
@@ -117,39 +124,35 @@ def main():
     # Back Button on Gui
     back_button = ttk.Button(tab1, text="Back")
     back_button.grid(row=4, column=1)
-    back_button['command'] = lambda: send_back(mqtt_client,
+    back_button['command'] = lambda: send_back(mqtt_client2,
                                                int(left_speed_entry.get()),
                                                int(right_speed_entry.get()))
-    root.bind('<Down>', lambda event: send_back(mqtt_client,
+    root.bind('<Down>', lambda event: send_back(mqtt_client2,
                                                 int(left_speed_entry.get()),
                                                 int(right_speed_entry.get())))
 
     # Up Button On Gui
     up_button = ttk.Button(tab2, text="Arm Up")
     up_button.grid(row=0, column=0)
-    up_button['command'] = lambda: send_up(mqtt_client)
-    root.bind('<u>', lambda event: send_up(mqtt_client))
+    up_button['command'] = lambda: send_up(mqtt_client2)
+    root.bind('<u>', lambda event: send_up(mqtt_client2))
 
     # Down Button On Gui
     down_button = ttk.Button(tab2, text="Arm Down")
     down_button.grid(row=1, column=0)
-    down_button['command'] = lambda: send_down(mqtt_client)
-    root.bind('<j>', lambda event: send_down(mqtt_client))
+    down_button['command'] = lambda: send_down(mqtt_client2)
+    root.bind('<j>', lambda event: send_down(mqtt_client2))
 
     # Quit Button on Gui
     quit_button = ttk.Button(tab3, text="Quit")
     quit_button.grid(row=0, column=0)
-    quit_button['command'] = (lambda: quit_program(mqtt_client))
+    quit_button['command'] = (lambda: quit_program(mqtt_client2))
 
     # End Button on Gui
     end_button = ttk.Button(tab3, text="Exit")
     end_button.grid(row=1, column=0)
-    end_button['command'] = (lambda: quit_program(mqtt_client))
+    end_button['command'] = (lambda: quit_program(mqtt_client2))
 
-    my_delegate = MyDelegate(canvas)
-    mqtt_client = com.MqttClient(my_delegate)
-    mqtt_client.connect("draw", "draw")
-    mqtt_client.connect_to_ev3()
 
     root.mainloop()
     canvas.mainloop()
@@ -160,6 +163,7 @@ def left_click(event, mqtt_client):
     canvas = event.widget
     canvas.create_oval(event.x - 5, event.y - 5, event.x + 5, event.y +
                        5, fill="red", width=1)
+    mqtt_client.send_message("drive_to_waypoint", [event.x, event.y, 300])
 
 
 def print_robot_position(event, x, y, mqtt_client):
@@ -216,6 +220,11 @@ def send_left(mqtt_client, left_speed, right_speed):
 def send_right(mqtt_client, left_speed, right_speed):
     print("drive_right")
     mqtt_client.send_message("drive_forward", [left_speed, -right_speed])
+
+
+def goto_waypoint(mqtt_client, x, y, speed):
+    print("Driving To Waypoint")
+
 
 
 def quit_program(mqtt_client):

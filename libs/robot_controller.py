@@ -267,3 +267,36 @@ class Snatch3r(object):
         self.drive_inches(self.x, 300)
         self.turn_degrees(90, 300)
         self.drive_inches(self.y, 300)
+
+    def drive_to_waypoint(self, x, y, speed):
+        """
+        Drives motors the given waypoint
+        """
+        while self.current_x < x:
+            pos = x * 90
+            self.left_motor.run_to_rel_pos(position_sp=pos, speed_sp=-speed,
+                                           stop_action="brake")
+            self.right_motor.run_to_rel_pos(position_sp=pos, speed_sp=-speed,
+                                            stop_action="brake")
+
+            self.left_motor.wait_while(ev3.Motor.STATE_RUNNING)
+            self.right_motor.wait_while(ev3.Motor.STATE_RUNNING)
+
+            self.current_x = self.current_x + math.cos(self.degrees_turned *
+                                               math.pi/180) * pos
+
+
+
+        # pos = inches * 90
+        # self.left_motor.run_to_rel_pos(position_sp=pos, speed_sp=-speed,
+        #                                stop_action="brake")
+        # self.right_motor.run_to_rel_pos(position_sp=pos, speed_sp=-speed,
+        #                                 stop_action="brake")
+        #
+        # self.left_motor.wait_while(ev3.Motor.STATE_RUNNING)
+        # self.right_motor.wait_while(ev3.Motor.STATE_RUNNING)
+        #
+        # self.current_x = self.current_x + math.cos(self.degrees_turned *
+        #                                    math.pi/180) * pos
+        # self.current_x = self.current_x + math.sin(self.degrees_turned *
+        #                                    math.pi/180) * pos
