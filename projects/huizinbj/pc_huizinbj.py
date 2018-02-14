@@ -73,7 +73,7 @@ def main():
     right_speed_entry.insert(0, "600")
     right_speed_entry.grid(row=1, column=2)
 
-    # Forward Button
+    # Forward Button on Gui
     forward_button = ttk.Button(tab1, text="Forward")
     forward_button.grid(row=2, column=1)
     forward_button['command'] = lambda: send_forward(mqtt_client,
@@ -87,7 +87,7 @@ def main():
                                                  int(left_speed_entry.get()),
                                                  int(right_speed_entry.get())))
 
-    # Left Button
+    # Left Button on Gui
     left_button = ttk.Button(tab1, text="Left")
     left_button.grid(row=3, column=0)
     left_button['command'] = lambda: send_left(mqtt_client,
@@ -97,13 +97,13 @@ def main():
                                                 int(left_speed_entry.get()),
                                                 int(right_speed_entry.get())))
 
-    # Stop Button
+    # Stop Button On Gui
     stop_button = ttk.Button(tab1, text="Stop")
     stop_button.grid(row=3, column=1)
     stop_button['command'] = lambda: stopbot(mqtt_client)
     root.bind('<space>', lambda event: stopbot(mqtt_client))
 
-    # Right Button
+    # Right Button On Gui
     right_button = ttk.Button(tab1, text="Right")
     right_button.grid(row=3, column=2)
     right_button['command'] = lambda: send_right(mqtt_client,
@@ -114,7 +114,7 @@ def main():
                                                   int(right_speed_entry.get()
                                                       )))
 
-    # Back Button
+    # Back Button on Gui
     back_button = ttk.Button(tab1, text="Back")
     back_button.grid(row=4, column=1)
     back_button['command'] = lambda: send_back(mqtt_client,
@@ -124,23 +124,24 @@ def main():
                                                 int(left_speed_entry.get()),
                                                 int(right_speed_entry.get())))
 
-    # Up Button
+    # Up Button On Gui
     up_button = ttk.Button(tab2, text="Arm Up")
     up_button.grid(row=0, column=0)
     up_button['command'] = lambda: send_up(mqtt_client)
     root.bind('<u>', lambda event: send_up(mqtt_client))
-    # Down Button
+
+    # Down Button On Gui
     down_button = ttk.Button(tab2, text="Arm Down")
     down_button.grid(row=1, column=0)
     down_button['command'] = lambda: send_down(mqtt_client)
     root.bind('<j>', lambda event: send_down(mqtt_client))
 
-    # Quit Button
+    # Quit Button on Gui
     quit_button = ttk.Button(tab3, text="Quit")
     quit_button.grid(row=0, column=0)
     quit_button['command'] = (lambda: quit_program(mqtt_client))
 
-    # End Button
+    # End Button on Gui
     end_button = ttk.Button(tab3, text="Exit")
     end_button.grid(row=1, column=0)
     end_button['command'] = (lambda: quit_program(mqtt_client))
@@ -161,12 +162,19 @@ def left_click(event, mqtt_client):
                        5, fill="red", width=1)
 
 
+def print_robot_position(event, x, y, mqtt_client):
+    canvas = event.widget
+    canvas.create_rectangle(x, y, x+5, y+5, fill="blue")
+
+
+def robot_position(x, y, mqtt_client):
+    print('Hi')
+
+
+
+
 def waypoint(x, y):
     print(x, y)
-
-
-def prints():
-    print("Works")
 
 
 def clear(canvas):
@@ -174,7 +182,7 @@ def clear(canvas):
     canvas.delete("all")
 
 
-# Arm command callbacks
+# Arm command callbacks for mqtt_client
 def send_up(mqtt_client):
     print("arm_up")
     mqtt_client.send_message("arm_up")

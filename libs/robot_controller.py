@@ -51,6 +51,12 @@ class Snatch3r(object):
 
         self.degrees_turned = 0
 
+        self.origin_x = 250
+        self.origin_y = 250
+
+        self.current_x = 250
+        self.current_y = 250
+
         assert self.arm_motor.connected
         assert self.left_motor.connected
         assert self.right_motor.connected
