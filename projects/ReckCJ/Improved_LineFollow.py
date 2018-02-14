@@ -2,9 +2,10 @@
 may not) change colors at any point and recalibrate the color sensor as
 necessary. Additionally, the robot will sense obstacles in its path and
 either move them or simply circumvent them, and wil be able to return to its
-original position on command.
+original position on command, and have a couple "personality" movement commands
 
 Entry Box Commands: "Return to start"
+                    "About Face"
 
                     "Go around"
                     "Move object"
@@ -14,7 +15,6 @@ Huizinga and Cory Reck"""
 
 import ev3dev.ev3 as ev3
 import time
-import math
 import tkinter
 from tkinter import ttk
 
@@ -48,6 +48,10 @@ def main():
     movement_entry_label.grid(row=0, column=0)
     movement_entry_box = ttk.Entry(tab_1, width=10)
     movement_entry_box.grid(row=1, column=0)
+    move_entry_submit = ttk.Button(tab_1, text="Submit Move Commands")
+    move_entry_submit.grid(row=2, column=0)
+    movement_entry_box['command'] = lambda: send_move_comand(mqtt_client,
+                                                            movement_entry_box)
 
     stop_button = ttk.Button(tab_1, text="Stop")
     stop_button.grid(row=0, column=1)
@@ -61,6 +65,10 @@ def main():
     obstacle_entry_label.grid(row=0, column=0)
     obstacle_entry_box = ttk.Entry(tab_2, width=10)
     obstacle_entry_box.grid(row=1, column=0)
+    obstacle_submit = ttk.Button(tab_2, text="Obstacle Submit")
+    obstacle_submit.grid(row=2, column=0)
+    obstacle_submit['command'] = lambda: send_move_comand(mqtt_client,
+                                                          obstacle_entry_box)
 
     light_button = ttk.Button(tab_2, text="Calibrate Light")
     light_button.grid(row=0, column=2)
@@ -78,14 +86,24 @@ def main():
     flex_button.grid(row=1, column=3)
     flex_button['command'] = lambda: send_flex(mqtt_client)
 
+    while True:
+        if robot.light_calibrated and robot.dark_calibrated:
+            break
     if robot.color_sensor.reflected_light_intensity < robot.dark_level+10:
         robot.drive_forward(300, 300)
+        time.sleep(0.1)
+    elif robot.color_sensor.reflected_light_intensity > robot.light_level-10:
+        robot.turn_degrees(5, 200)
+        time.sleep(0.1)
     else:
-        robot.turn_degrees(1, 200)
+        robot.dark_calibrated = False
+        robot.light_calibrated = False
+        while True:
+            time.sleep(0.1)
+            if robot.light_calibrated and robot.dark_calibrated:
+                break
 
-
-
-
+    root.mainloop()
 
 
 def send_light(mqtt_client):
@@ -103,13 +121,13 @@ def send_dark(mqtt_client):
 def send_wave(mqtt_client):
     print("Waving Hello!")
     ev3.Sound.speak("Hello")
-    mqtt_client.send_message("wave_hello", 5)
+    mqtt_client.send_message("wave_hello", [5])
 
 
 def send_flex(mqtt_client):
     print("Flexing that claw")
     ev3.Sound.speak("Flex")
-    mqtt_client.send_message("flex", 2)
+    mqtt_client.send_message("flex", [2])
 
 
 def send_stop(mqtt_client):
@@ -121,4 +139,16 @@ def send_stop(mqtt_client):
 def send_uturn(mqtt_client):
     print("U-Turn")
     ev3.Sound.speak("Turning Around")
-    mqtt_client.send_message("uturn")
+    mqtt_client.send_message("turn_degrees", [180, 300])
+
+
+def send_move_comand(mqtt_client, entry_box):
+    if entry_box.get() == "Return to start":
+        ev3.Sound.speak("Going Home")
+        mqtt_client.send_message("return_start")
+    elif entry_box.get() == "About Face":
+        ev3.Sound.speak("Ten Hut")
+        mqtt_client.send_message("turn_degrees", [90, 300])
+        time.sleep(3)
+    else:
+        ev3.Sound.speak("What")

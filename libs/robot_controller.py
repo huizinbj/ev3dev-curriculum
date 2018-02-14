@@ -40,10 +40,14 @@ class Snatch3r(object):
         self.pixy = ev3.Sensor(driver_name="pixy-lego")
 
         self.light_level = 90
+        self.light_calibrated = False
+        self.dark_calibrated = False
         self.dark_level = 10
 
-        self.startx = 0
-        self.starty = 0
+        self.x = 0
+        self.y = 0
+
+        self.degrees_turned = 0
 
         assert self.arm_motor.connected
         assert self.left_motor.connected
@@ -64,6 +68,8 @@ class Snatch3r(object):
                                         stop_action="brake")
         self.left_motor.wait_while(ev3.Motor.STATE_RUNNING)
         self.right_motor.wait_while(ev3.Motor.STATE_RUNNING)
+        self.x = self.x + math.cos(self.degrees_turned * math.pi/180) * pos
+        self.y = self.y + math.sin(self.degrees_turned * math.pi/180) * pos
 
     def turn_degrees(self, degrees_to_turn, turn_speed_sp):
         pos = degrees_to_turn * 4.5
@@ -75,6 +81,10 @@ class Snatch3r(object):
                                         stop_action="brake")
         self.left_motor.wait_while(ev3.Motor.STATE_RUNNING)
         self.right_motor.wait_while(ev3.Motor.STATE_RUNNING)
+        if self.degrees_turned + pos <= 360:
+            self.degrees_turned = self.degrees_turned + pos
+        else:
+            self.degrees_turned = (self.degrees_turned + pos) % 360
 
     def arm_calibration(self):
         """
@@ -215,12 +225,14 @@ class Snatch3r(object):
         ev3.Sound.speak("Calibrate Light Color")
         time.sleep(1)
         self.light_level = self.color_sensor.reflected_light_intensity()
+        self.light_calibrated = True
 
     def calibrate_dark(self):
         """Calibrates the Color Sensor's lower bound for line-following"""
         ev3.Sound.speak("Calibrate Dark Color")
         time.sleep(1)
         self.dark_level = self.color_sensor.reflected_light_intensity()
+        self.dark_calibrated = False
 
     def wave_hello(self, n):
         """Uses the arm motor's up/down to 'wave' hello n times"""
@@ -238,5 +250,12 @@ class Snatch3r(object):
             self.arm_motor.run_to_abs_pos(position_sp=0, speed_sp=900)
             time.sleep(0.1)
 
-    def uturn(self):
-        self.turn_degrees(180, 300)
+    def return_start(self):
+        """Utilizes the turn_degrees and drive_inches to return to the point
+        where the robot started, which is tracked in the use of those
+        functions via the instance variables self.x, self.y,
+        and self.degrees_turned"""
+        self.turn_degrees(180-self.degrees_turned, 300)
+        self.drive_inches(self.x, 300)
+        self.turn_degrees(90, 300)
+        self.drive_inches(self.y, 300)
