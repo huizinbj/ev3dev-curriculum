@@ -79,6 +79,8 @@ class Snatch3r(object):
         self.y = self.y + math.sin(self.degrees_turned * math.pi/180) * pos
 
     def turn_degrees(self, degrees_to_turn, turn_speed_sp):
+        """Drives motors at the same given speed, but in opposite
+        directions, to turn the robot the given degrees"""
         pos = degrees_to_turn * 4.5
         self.left_motor.run_to_rel_pos(position_sp=-pos,
                                        speed_sp=turn_speed_sp,
@@ -229,15 +231,15 @@ class Snatch3r(object):
     def calibrate_light(self):
         """Calibrates the Color Sensor's upper bound for line-following"""
         ev3.Sound.speak("Calibrate Light Color")
-        time.sleep(1)
-        self.light_level = self.color_sensor.reflected_light_intensity()
+        time.sleep(0.05)
+        self.light_level = self.color_sensor.reflected_light_intensity
         self.light_calibrated = True
 
     def calibrate_dark(self):
         """Calibrates the Color Sensor's lower bound for line-following"""
         ev3.Sound.speak("Calibrate Dark Color")
-        time.sleep(1)
-        self.dark_level = self.color_sensor.reflected_light_intensity()
+        time.sleep(0.05)
+        self.dark_level = self.color_sensor.reflected_light_intensity
         self.dark_calibrated = True
 
     def wave_hello(self, n):
@@ -277,19 +279,24 @@ class Snatch3r(object):
         while True:
             if not self.dark_calibrated or not self.light_calibrated:
                 break
-            if self.dark_level - 10 < \
-                self.color_sensor.reflected_light_intensity < self.dark_level \
-                    + 10:
+            if self.dark_level - 15 < \
+                    self.color_sensor.reflected_light_intensity < \
+                    self.dark_level + 15:
                 self.drive_forward(300, 300)
-                time.sleep(0.1)
-            elif self.light_level + 10 > \
-                self.color_sensor.reflected_light_intensity > self.light_level\
-                    - 10:
+                time.sleep()
+            elif self.light_level + 15 > \
+                    self.color_sensor.reflected_light_intensity > \
+                    self.light_level - 15:
                 self.turn_degrees(5, 200)
-                time.sleep(0.1)
+                time.sleep(0.01)
+            elif self.ir_sensor.proximity < 10:
+                self.stop()
+                self.obstructed = True
+                break
             else:
                 self.dark_calibrated = False
                 self.light_calibrated = False
+                self.stop()
                 # Send message that calibration is no longer sufficient
                 break
 
@@ -297,13 +304,6 @@ class Snatch3r(object):
         """In the case of an incorrect command entry, gives audio cue of the
         error"""
         ev3.Sound.speak("Bad Command")
-
-    def obstruction(self):
-        """"""
-        if self.ir_sensor.proximity < 10:
-            self.stop()
-            self.obstructed = True
-            # Send message that the robot is obstructed
 
     def drive_to_waypoint(self, x, y, speed):
         """

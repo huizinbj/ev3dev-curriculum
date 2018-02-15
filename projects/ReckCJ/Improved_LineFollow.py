@@ -58,6 +58,10 @@ def main():
     uturn_button.grid(row=1, column=1)
     uturn_button['command'] = lambda: send_uturn(mqtt_client)
 
+    follow_button = ttk.Button(tab_1, text="Follow Line")
+    follow_button.grid(row=0, column=2)
+    follow_button['command'] = lambda: send_follow(mqtt_client)
+
     shutdown_button = ttk.Button(tab_1, text="Shutdown")
     shutdown_button.grid(row=1, column=2)
     shutdown_button['command'] = lambda: send_shutdown(mqtt_client)
@@ -123,6 +127,11 @@ def send_uturn(mqtt_client):
 def send_shutdown(mqtt_client):
     print("Shutting Down")
     mqtt_client.send_message("shutdown")
+
+
+def send_follow(mqtt_client):
+    print("Following the Line")
+    mqtt_client.send_message("line_follow")
 
 
 def send_move_comand(mqtt_client, entry_box):
