@@ -16,32 +16,36 @@ class MyDelegate(object):
 
 def main():
 
-     # This Creates the Canvas
-
+    # This Creates the Canvas
     root2 = tkinter.Tk()
     root2.title = "Canvas"
 
     main_frame = ttk.Frame(root2, padding=5)
     main_frame.grid()
 
-    canvas = tkinter.Canvas(main_frame, background="lightgray", width=500,
-                            height=500)
+    canvas = tkinter.Canvas(main_frame, background="lightgray", width=480,
+                            height=480)
     canvas.grid(columnspan=2)
 
+    # Creates The Mqtt_client for the canvas
     my_delegate = MyDelegate(canvas)
     mqtt_client = com.MqttClient(my_delegate)
     mqtt_client.connect("draw", "draw")
 
+    # Creates The Mqtt_client for the ev3
     mqtt_client2 = com.MqttClient()
     mqtt_client2.connect_to_ev3()
 
-    canvas.bind("<Button-1>", lambda event: left_click(event, mqtt_client2))
+    # Creates the left click on the Canvas
+    canvas.bind("<Button-1>", lambda event: left_click(event, mqtt_client,
+                                                       mqtt_client2))
 
     # Quit Button on Canvas
     quit_button = ttk.Button(main_frame, text="Quit")
     quit_button.grid(row=3, column=1)
     quit_button["command"] = lambda: quit_program(mqtt_client)
 
+    # Clear Button on the Canvas
     clear_button = ttk.Button(main_frame, text="Clear")
     clear_button.grid(row=3, column=0)
     clear_button["command"] = lambda: clear(canvas)
@@ -153,41 +157,29 @@ def main():
     end_button.grid(row=1, column=0)
     end_button['command'] = (lambda: quit_program(mqtt_client2))
 
-
+    # Keeps the Gui Running
     root.mainloop()
     canvas.mainloop()
 
 
-def left_click(event, mqtt_client):
-    waypoint(event.x, event.y)
+def left_click(event, mqtt_client, mqtt_client2):
+    print(event.x, event.y)
     canvas = event.widget
     canvas.create_oval(event.x - 5, event.y - 5, event.x + 5, event.y +
                        5, fill="red", width=1)
-    mqtt_client.send_message("drive_to_waypoint", [event.x, event.y, 300])
 
 
-def print_robot_position(event, x, y, mqtt_client):
-    canvas = event.widget
-    canvas.create_rectangle(x, y, x+5, y+5, fill="blue")
-
-
-def robot_position(x, y, mqtt_client):
-    print('Hi')
-
-
-
-
-def waypoint(x, y):
-    print(x, y)
+    mqtt_client2.send_message("drive_to_waypoint", [event.x, event.y, 300])
 
 
 def clear(canvas):
-    """Clears the canvas contents"""
+    """Clears the canvas of all the waypoints"""
     canvas.delete("all")
 
 
 # Arm command callbacks for mqtt_client
 def send_up(mqtt_client):
+    """Sen"""
     print("arm_up")
     mqtt_client.send_message("arm_up")
 

@@ -51,11 +51,10 @@ class Snatch3r(object):
 
         self.degrees_turned = 0
 
-        self.origin_x = 250
-        self.origin_y = 250
-
-        self.current_x = 250
-        self.current_y = 250
+        self.origin_x = 240
+        self.origin_y = 240
+        self.current_x = 240
+        self.current_y = 240
 
         assert self.arm_motor.connected
         assert self.left_motor.connected
@@ -308,20 +307,28 @@ class Snatch3r(object):
 
     def drive_to_waypoint(self, x, y, speed):
         """
-        Drives motors the given waypoint
+        Drives motors the waypoint recieved by a canvas click. It determines
+        where to drive by calculating the difference and converting it to
+        inches to drive forward and when to turn.
         """
-        while self.current_x < x:
-            pos = x * 90
-            self.left_motor.run_to_rel_pos(position_sp=pos, speed_sp=-speed,
-                                           stop_action="brake")
-            self.right_motor.run_to_rel_pos(position_sp=pos, speed_sp=-speed,
-                                            stop_action="brake")
+        if self.current_x < x:
+            self.current_x = self.current_x + x
+        if self.current_x > x:
+            self.current_x = self.current_x - x
+        if self.current_y < y:
+            self.current_y = self.current_y + y
+        if self.current_x > y:
+            self.current_x = self.current_x - y
+        drive_x_axis = self.current_x
+        drive_y_axis = self.current_y
 
-            self.left_motor.wait_while(ev3.Motor.STATE_RUNNING)
-            self.right_motor.wait_while(ev3.Motor.STATE_RUNNING)
+        inches_to_drive_x = drive_x_axis/48
+        inches_to_drive_y = drive_y_axis/48
 
-            self.current_x = self.current_x + math.cos(self.degrees_turned *
-                                               math.pi/180) * pos
+        self.drive_inches(inches_to_drive_x, speed)
+        print("Good")
+
+
 
 
 
