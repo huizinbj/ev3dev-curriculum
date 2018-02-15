@@ -301,37 +301,34 @@ class Snatch3r(object):
         where to drive by calculating the difference and converting it to
         inches to drive forward and when to turn.
         """
-        if self.current_x < x:
-            self.current_x = self.current_x + x
-        if self.current_x > x:
-            self.current_x = self.current_x - x
         if self.current_y < y:
-            self.current_y = self.current_y + y
-        if self.current_x > y:
-            self.current_x = self.current_x - y
-        drive_x_axis = self.current_x
-        drive_y_axis = self.current_y
-
-        inches_to_drive_x = drive_x_axis/48
-        inches_to_drive_y = drive_y_axis/48
-
-        self.drive_inches(inches_to_drive_x, speed)
-        print("Good")
-
-
-
+            print("Drive Forward")
+            drive_y_axis = y - self.current_y
+            self.current_y = drive_y_axis
+            inches_to_drive_y = drive_y_axis/48
+            self.drive_inches(inches_to_drive_y, speed)
+        time.sleep(5)
+        if self.current_y > y:
+            print("Drive Backward")
+            drive_y_axis = y
+            self.current_y = drive_y_axis
+            inches_to_drive_y = drive_y_axis/48
+            self.drive_inches(inches_to_drive_y, -speed)
 
 
-        # pos = inches * 90
-        # self.left_motor.run_to_rel_pos(position_sp=pos, speed_sp=-speed,
-        #                                stop_action="brake")
-        # self.right_motor.run_to_rel_pos(position_sp=pos, speed_sp=-speed,
-        #                                 stop_action="brake")
+        # if self.current_x < x:
+        #     self.turn_degrees(45, speed)
+        #     self.current_x = self.current_x + x
+        #     drive_x_axis = self.current_x
+        #     inches_to_drive_x = drive_x_axis / 12
+        #     self.drive_inches(inches_to_drive_x, speed)
+        #     self.turn_degrees(-45, speed)
         #
-        # self.left_motor.wait_while(ev3.Motor.STATE_RUNNING)
-        # self.right_motor.wait_while(ev3.Motor.STATE_RUNNING)
-        #
-        # self.current_x = self.current_x + math.cos(self.degrees_turned *
-        #                                    math.pi/180) * pos
-        # self.current_x = self.current_x + math.sin(self.degrees_turned *
-        #                                    math.pi/180) * pos
+        # if self.current_x > x:
+        #     self.turn_degrees(-45, speed)
+        #     self.current_x = self.current_x + x
+        #     drive_x_axis = self.current_x
+        #     inches_to_drive_x = drive_x_axis / 12
+        #     self.drive_inches(inches_to_drive_x, speed)
+        #     self.turn_degrees(45, speed)
+

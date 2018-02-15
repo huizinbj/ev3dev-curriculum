@@ -167,8 +167,6 @@ def left_click(event, mqtt_client, mqtt_client2):
     canvas = event.widget
     canvas.create_oval(event.x - 5, event.y - 5, event.x + 5, event.y +
                        5, fill="red", width=1)
-
-
     mqtt_client2.send_message("drive_to_waypoint", [event.x, event.y, 300])
 
 
@@ -213,9 +211,6 @@ def send_right(mqtt_client, left_speed, right_speed):
     print("drive_right")
     mqtt_client.send_message("drive_forward", [left_speed, -right_speed])
 
-
-def goto_waypoint(mqtt_client, x, y, speed):
-    print("Driving To Waypoint")
 
 
 
