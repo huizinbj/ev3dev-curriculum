@@ -19,7 +19,6 @@ import tkinter
 from tkinter import ttk
 
 import mqtt_remote_method_calls as com
-import robot_controller as robo
 
 
 def main():
@@ -30,7 +29,6 @@ def main():
 
     mqtt_client = com.MqttClient()
     mqtt_client.connect_to_ev3()
-    robot = robo.Snatch3r()
 
     root = tkinter.Tk()
     root.title("Advanced Line Follow controls")
@@ -86,34 +84,6 @@ def main():
     flex_button.grid(row=1, column=3)
     flex_button['command'] = lambda: send_flex(mqtt_client)
 
-    while True:
-        if robot.light_calibrated and robot.dark_calibrated:
-            break
-        time.sleep(0.01)
-    if robot.color_sensor.reflected_light_intensity < robot.dark_level+10:
-        robot.drive_forward(300, 300)
-        time.sleep(0.1)
-    elif robot.color_sensor.reflected_light_intensity > robot.light_level-10:
-        robot.turn_degrees(5, 200)
-        time.sleep(0.1)
-    else:
-        robot.dark_calibrated = False
-        robot.light_calibrated = False
-        while True:
-            time.sleep(0.1)
-            if robot.light_calibrated and robot.dark_calibrated:
-                break
-
-    if robot.ir_sensor.proximity < 10:
-        robot.obstructed = True
-        robot.stop()
-        ev3.Sound.speak("Obstacle")
-
-    while robot.obstructed:
-        time.sleep(0.01)
-        if robot.obstructed == False:
-            break
-
     root.mainloop()
 
 
@@ -160,6 +130,18 @@ def send_move_comand(mqtt_client, entry_box):
     elif entry_box.get() == "About Face":
         ev3.Sound.speak("Ten Hut")
         mqtt_client.send_message("turn_degrees", [90, 300])
+        time.sleep(3)
+    else:
+        ev3.Sound.speak("What")
+
+
+def send_obstacle_command(mqtt_client, entry_box):
+    if entry_box.get() == "Go around":
+        ev3.Sound.speak("Going Around")
+        mqtt_client.send_message("go_around")
+    elif entry_box.get() == "Move 0bject":
+        ev3.Sound.speak("Moving The Object")
+        mqtt_client.send_message("move_obstruction")
         time.sleep(3)
     else:
         ev3.Sound.speak("What")
