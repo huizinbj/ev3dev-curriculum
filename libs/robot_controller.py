@@ -267,6 +267,34 @@ class Snatch3r(object):
         self.turn_degrees(90, 300)
         self.drive_inches(self.y, 300)
 
+    def line_follow(self):
+        """Continuously checks if the robot's dark and light values are
+        calibrated correctly, and if so, follows a line of the dark color
+        indefinitely. If not, sends a message that the calibration is no
+        longesr sufficient so that the user may recalibrate """
+        while True:
+            if not self.dark_calibrated or not self.light_calibrated:
+                break
+            if self.color_sensor.reflected_light_intensity < self.dark_level +\
+                    10:
+                self.drive_forward(300, 300)
+                time.sleep(0.1)
+            elif self.color_sensor.reflected_light_intensity > \
+                self.light_level - 10:
+                self.turn_degrees(5, 200)
+                time.sleep(0.1)
+            else:
+                self.dark_calibrated = False
+                self.light_calibrated = False
+                # Send message that calibration is no longer sufficient
+                break
+
+    def obstruction(self):
+        if self.ir_sensor.proximity < 10:
+            self.stop()
+            self.obstructed = True
+            # Send message that the robot is obstructed
+
     def drive_to_waypoint(self, x, y, speed):
         """
         Drives motors the waypoint recieved by a canvas click. It determines
