@@ -25,7 +25,6 @@ def main():
     print("--------------------------------------------")
     print("Advanced Line Following with user commands")
     print("--------------------------------------------")
-    ev3.Sound.speak("Follow Fancy Line").wait()
 
     mqtt_client = com.MqttClient()
     mqtt_client.connect_to_ev3()
@@ -48,7 +47,7 @@ def main():
     movement_entry_box.grid(row=1, column=0)
     move_entry_submit = ttk.Button(tab_1, text="Submit Move Commands")
     move_entry_submit.grid(row=2, column=0)
-    movement_entry_box['command'] = lambda: send_move_comand(mqtt_client,
+    move_entry_submit['command'] = lambda: send_move_comand(mqtt_client,
                                                             movement_entry_box)
 
     stop_button = ttk.Button(tab_1, text="Stop")
@@ -58,6 +57,10 @@ def main():
     uturn_button = ttk.Button(tab_1, text="U-turn")
     uturn_button.grid(row=1, column=1)
     uturn_button['command'] = lambda: send_uturn(mqtt_client)
+
+    shutdown_button = ttk.Button(tab_1, text="Shutdown")
+    shutdown_button.grid(row=1, column=2)
+    shutdown_button['command'] = lambda: send_shutdown(mqtt_client)
 
     obstacle_entry_label = ttk.Label(tab_2, text="Obstacle Handling")
     obstacle_entry_label.grid(row=0, column=0)
@@ -89,59 +92,63 @@ def main():
 
 def send_light(mqtt_client):
     print("Calibrate Light")
-    ev3.Sound.speak("Calibrating Light")
     mqtt_client.send_message("calibrate_light")
 
 
 def send_dark(mqtt_client):
     print("Calibrate Dark")
-    ev3.Sound.speak("Calibrating Dark")
     mqtt_client.send_message("calibrate_dark")
 
 
 def send_wave(mqtt_client):
     print("Waving Hello!")
-    ev3.Sound.speak("Hello")
     mqtt_client.send_message("wave_hello", [5])
 
 
 def send_flex(mqtt_client):
     print("Flexing that claw")
-    ev3.Sound.speak("Flex")
     mqtt_client.send_message("flex", [2])
 
 
 def send_stop(mqtt_client):
     print("Stopping the Bot")
-    ev3.Sound.speak("Stopping")
     mqtt_client.send_message("stop")
 
 
 def send_uturn(mqtt_client):
     print("U-Turn")
-    ev3.Sound.speak("Turning Around")
     mqtt_client.send_message("turn_degrees", [180, 300])
+
+
+def send_shutdown(mqtt_client):
+    print("Shutting Down")
+    mqtt_client.send_message("shutdown")
 
 
 def send_move_comand(mqtt_client, entry_box):
     if entry_box.get() == "Return to start":
-        ev3.Sound.speak("Going Home")
+        print("Returning to starting point")
         mqtt_client.send_message("return_start")
     elif entry_box.get() == "About Face":
-        ev3.Sound.speak("Ten Hut")
+        print("Standing at attention for 3 seconds")
         mqtt_client.send_message("turn_degrees", [90, 300])
         time.sleep(3)
     else:
-        ev3.Sound.speak("What")
+        print("Incorrect Command")
+        mqtt_client.send_message("wrong_input")
 
 
 def send_obstacle_command(mqtt_client, entry_box):
     if entry_box.get() == "Go around":
         ev3.Sound.speak("Going Around")
         mqtt_client.send_message("go_around")
-    elif entry_box.get() == "Move 0bject":
+    elif entry_box.get() == "Move Object":
         ev3.Sound.speak("Moving The Object")
         mqtt_client.send_message("move_obstruction")
         time.sleep(3)
     else:
-        ev3.Sound.speak("What")
+        print("Incorrect Command")
+        mqtt_client.send_message("wrong_input")
+
+
+main()

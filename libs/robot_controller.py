@@ -122,7 +122,6 @@ class Snatch3r(object):
         while not self.touch_sensor.is_pressed:
             time.sleep(0.01)
         self.arm_motor.stop(stop_action='brake')
-        ev3.Sound.beep()
 
     def arm_down(self):
         """
@@ -132,7 +131,6 @@ class Snatch3r(object):
             position_sp=0, speed_sp=900)
         self.arm_motor.wait_while(
             ev3.Motor.STATE_RUNNING)
-        ev3.Sound.beep()
 
     def shutdown(self):
         """
@@ -166,6 +164,7 @@ class Snatch3r(object):
         """
         self.left_motor.stop(stop_action='brake')
         self.right_motor.stop(stop_action='brake')
+        ev3.Sound.speak("Stopping")
 
     def drive_forward(self, leftspeed, rightspeed):
         """
@@ -240,10 +239,11 @@ class Snatch3r(object):
         ev3.Sound.speak("Calibrate Dark Color")
         time.sleep(1)
         self.dark_level = self.color_sensor.reflected_light_intensity()
-        self.dark_calibrated = False
+        self.dark_calibrated = True
 
     def wave_hello(self, n):
         """Uses the arm motor's up/down to 'wave' hello n times"""
+        ev3.Sound.speak("Hello")
         for k in range(n):
             self.arm_up()
             time.sleep(0.1)
@@ -252,17 +252,19 @@ class Snatch3r(object):
 
     def flex(self, n):
         """Uses the arm motor to open/close the claw n times"""
+        ev3.Sound.speak("Flex")
         for k in range(n):
-            self.arm_motor.run_to_abs_pos(position_sp=2, speed_sp=900)
-            time.sleep(0.1)
-            self.arm_motor.run_to_abs_pos(position_sp=0, speed_sp=900)
-            time.sleep(0.1)
+            self.arm_motor.run_to_rel_pos(position_sp=5*360, speed_sp=900)
+            self.arm_motor.wait_while(ev3.Motor.STATE_RUNNING)
+            self.arm_motor.run_to_rel_pos(position_sp=-5*360, speed_sp=900)
+            self.arm_motor.wait_while(ev3.Motor.STATE_RUNNING)
 
     def return_start(self):
         """Utilizes the turn_degrees and drive_inches to return to the point
         where the robot started, which is tracked in the use of those
         functions via the instance variables self.x, self.y,
         and self.degrees_turned"""
+        ev3.Sound.speak("Going Home")
         self.turn_degrees(180-self.degrees_turned, 300)
         self.drive_inches(self.x, 300)
         self.turn_degrees(90, 300)
@@ -276,12 +278,14 @@ class Snatch3r(object):
         while True:
             if not self.dark_calibrated or not self.light_calibrated:
                 break
-            if self.color_sensor.reflected_light_intensity < self.dark_level +\
-                    10:
+            if self.dark_level - 10 < \
+                self.color_sensor.reflected_light_intensity < self.dark_level \
+                    + 10:
                 self.drive_forward(300, 300)
                 time.sleep(0.1)
-            elif self.color_sensor.reflected_light_intensity > \
-                self.light_level - 10:
+            elif self.light_level + 10 > \
+                self.color_sensor.reflected_light_intensity > self.light_level\
+                    - 10:
                 self.turn_degrees(5, 200)
                 time.sleep(0.1)
             else:
@@ -290,7 +294,13 @@ class Snatch3r(object):
                 # Send message that calibration is no longer sufficient
                 break
 
+    def wrong_input(self):
+        """In the case of an incorrect command entry, gives audio cue of the
+        error"""
+        ev3.Sound.speak("Bad Command")
+
     def obstruction(self):
+        """"""
         if self.ir_sensor.proximity < 10:
             self.stop()
             self.obstructed = True
