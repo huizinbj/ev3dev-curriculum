@@ -316,7 +316,7 @@ class Snatch3r(object):
         inches_to_drive_y = drive_y_axis/48
 
         self.drive_inches(inches_to_drive_x, speed)
-
+        print("Good")
 
 
 
