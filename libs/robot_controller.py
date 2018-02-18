@@ -18,6 +18,7 @@
 import ev3dev.ev3 as ev3
 import time
 import math
+import mqtt_remote_method_calls as com
 
 
 class Snatch3r(object):
@@ -38,18 +39,15 @@ class Snatch3r(object):
         self.ir_sensor = ev3.InfraredSensor()
         self.beacon_seeker = ev3.BeaconSeeker(channel=1)
         self.pixy = ev3.Sensor(driver_name="pixy-lego")
+        self.mqtt_client = com.MqttClient(self)
+        self.mqtt_client.connect_to_pc()
 
         self.light_level = 90
         self.light_calibrated = False
         self.dark_calibrated = False
         self.dark_level = 10
 
-        self.x = 0
-        self.y = 0
-
         self.obstructed = False
-
-        self.degrees_turned = 0
 
         self.origin_x = 240
         self.origin_y = 240
@@ -75,8 +73,6 @@ class Snatch3r(object):
                                         stop_action="brake")
         self.left_motor.wait_while(ev3.Motor.STATE_RUNNING)
         self.right_motor.wait_while(ev3.Motor.STATE_RUNNING)
-        self.x = self.x + math.cos(self.degrees_turned * math.pi/180) * pos
-        self.y = self.y + math.sin(self.degrees_turned * math.pi/180) * pos
 
     def turn_degrees(self, degrees_to_turn, turn_speed_sp):
         """Drives motors at the same given speed, but in opposite
@@ -90,10 +86,6 @@ class Snatch3r(object):
                                         stop_action="brake")
         self.left_motor.wait_while(ev3.Motor.STATE_RUNNING)
         self.right_motor.wait_while(ev3.Motor.STATE_RUNNING)
-        if self.degrees_turned + pos <= 360:
-            self.degrees_turned = self.degrees_turned + pos
-        else:
-            self.degrees_turned = (self.degrees_turned + pos) % 360
 
     def arm_calibration(self):
         """
@@ -163,6 +155,7 @@ class Snatch3r(object):
         """
         Stops the Snatchers motors to cease them from moving.
         """
+        print('sanity test')
         self.left_motor.stop(stop_action='brake')
         self.right_motor.stop(stop_action='brake')
         ev3.Sound.speak("Stopping")
@@ -244,6 +237,7 @@ class Snatch3r(object):
 
     def wave_hello(self, n):
         """Uses the arm motor's up/down to 'wave' hello n times"""
+        self.stop()
         ev3.Sound.speak("Hello")
         for k in range(n):
             self.arm_up()
@@ -253,6 +247,7 @@ class Snatch3r(object):
 
     def flex(self, n):
         """Uses the arm motor to open/close the claw n times"""
+        self.stop()
         ev3.Sound.speak("Flex")
         for k in range(n):
             self.arm_motor.run_to_rel_pos(position_sp=5*360, speed_sp=900)
@@ -266,44 +261,60 @@ class Snatch3r(object):
         functions via the instance variables self.x, self.y,
         and self.degrees_turned"""
         ev3.Sound.speak("Going Home")
-        self.turn_degrees(180-self.degrees_turned, 300)
-        self.drive_inches(self.x, 300)
-        self.turn_degrees(90, 300)
-        self.drive_inches(self.y, 300)
+        # TODO: Implement a function to return the robot to the start
+        # Note: Need to have some instance variables in movement methods
+        # above so that return_start can do some math with them and "backtrack"
+        # to the start
 
     def line_follow(self):
         """Continuously checks if the robot's dark and light values are
         calibrated correctly, and if so, follows a line of the dark color
-        indefinitely. If not, sends a message that the calibration is no
-        longesr sufficient so that the user may recalibrate """
+        indefinitely, recalibrating the dark color as it follows the line so a
+        line of changing color can still be followed. The light color must
+        remain constant for this to function properly."""
         while True:
-            if not self.dark_calibrated or not self.light_calibrated:
+            if not self.light_calibrated or not self.dark_calibrated:
                 break
-            if self.dark_level - 15 < \
-                    self.color_sensor.reflected_light_intensity < \
-                    self.dark_level + 15:
-                self.drive_forward(300, 300)
-                time.sleep()
-            elif self.light_level + 15 > \
-                    self.color_sensor.reflected_light_intensity > \
-                    self.light_level - 15:
-                self.turn_degrees(5, 200)
-                time.sleep(0.01)
+            if self.touch_sensor.is_pressed:
+                self.stop()
+                break
             elif self.ir_sensor.proximity < 10:
-                self.stop()
+                ev3.Sound.speak("Obstruction")
                 self.obstructed = True
-                break
-            else:
-                self.dark_calibrated = False
-                self.light_calibrated = False
+                self.mqtt_client.send_message("obstructed")
                 self.stop()
-                # Send message that calibration is no longer sufficient
                 break
+            if self.color_sensor.reflected_light_intensity < \
+                            self.dark_level + 10:
+                self.drive_forward(300, 300)
+            else:
+                self.turn_degrees(10, 300)
+                time.sleep(0.1)
+                self.dark_level = self.color_sensor.reflected_light_intensity
 
     def wrong_input(self):
         """In the case of an incorrect command entry, gives audio cue of the
         error"""
         ev3.Sound.speak("Bad Command")
+
+    def move_obstruction(self):
+        self.drive_forward(100, 100)
+        if self.ir_sensor.proximity < 3:
+            self.stop()
+            self.arm_up()
+            self.turn_degrees(90, 300)
+            self.drive_inches(10, 300)
+            self.arm_down()
+            self.drive_inches(-10, 300)
+            self.turn_degrees(-90, 300)
+
+    def go_around(self):
+        self.turn_degrees(90, 300)
+        self.drive_inches(10, 300)
+        self.turn_degrees(-90, 300)
+        self.drive_inches(5, 300)
+        self.turn_degrees(-90, 300)
+        self.drive_inches(10, 300)
 
     def drive_to_waypoint(self, x, y, speed):
         """
