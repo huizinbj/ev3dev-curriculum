@@ -45,6 +45,10 @@ def main():
     quit_button.grid(row=3, column=1)
     quit_button["command"] = lambda: quit_program(mqtt_client)
 
+    origin_button = ttk.Button(main_frame, text="Origin")
+    origin_button.grid(row=2, column=1)
+    origin_button["command"] = lambda: bot_origin(mqtt_client2)
+
     # Clear Button on the Canvas
     clear_button = ttk.Button(main_frame, text="Clear")
     clear_button.grid(row=3, column=0)
@@ -210,6 +214,10 @@ def send_left(mqtt_client, left_speed, right_speed):
 def send_right(mqtt_client, left_speed, right_speed):
     print("drive_right")
     mqtt_client.send_message("drive_forward", [left_speed, -right_speed])
+
+
+def bot_origin(mqtt_client):
+    mqtt_client.send_message("reset_xy")
 
 
 

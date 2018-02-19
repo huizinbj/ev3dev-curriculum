@@ -60,12 +60,13 @@ class Snatch3r(object):
         assert self.touch_sensor.connected
         assert self.color_sensor.connected
         assert self.ir_sensor.connected
-        assert self.pixy.connected
+        # assert self.pixy.connected
 
     def drive_inches(self, inches, speed):
         """
         Drives motors the given inches and the given speed
         """
+        print(inches)
         pos = inches * 90
         self.left_motor.run_to_rel_pos(position_sp=pos, speed_sp=-speed,
                                        stop_action="brake")
@@ -322,26 +323,32 @@ class Snatch3r(object):
         where to drive by calculating the difference and converting it to
         inches to drive forward and when to turn.
         """
-        if self.current_y < y:
-            print("Drive Forward")
-            drive_y_axis = y - self.current_y
-            self.current_y = drive_y_axis
-            inches_to_drive_y = drive_y_axis/48
-            self.drive_inches(inches_to_drive_y, speed)
-        time.sleep(5)
+        # print("Go to", x, y)
         if self.current_y > y:
+            print("Where is X", self.current_x, "Y", self.current_y)
+            print("Drive Forward")
+            drive_y_axis = self.current_y - y
+            inches_to_drive_y = drive_y_axis/10
+            print("Conversion", inches_to_drive_y)
+            self.current_y = y
+            self.drive_inches_botwards(inches_to_drive_y, speed)
+            print("X is Here", self.current_x, "Y", self.current_y)
+
+
+        if self.current_y < y:
             print("Drive Backward")
-            drive_y_axis = y
-            self.current_y = drive_y_axis
-            inches_to_drive_y = drive_y_axis/48
-            self.drive_inches(inches_to_drive_y, -speed)
+            drive_y_axis = y - self.current_y
+            self.current_y = y
+            inches_to_drive_y = drive_y_axis/10
+            print("Conversion", inches_to_drive_y)
+            self.drive_inches_bot(inches_to_drive_y, -speed)
 
 
         # if self.current_x < x:
         #     self.turn_degrees(45, speed)
         #     self.current_x = self.current_x + x
         #     drive_x_axis = self.current_x
-        #     inches_to_drive_x = drive_x_axis / 12
+        #     inches_to_drive_x = drive_x_axis / 10
         #     self.drive_inches(inches_to_drive_x, speed)
         #     self.turn_degrees(-45, speed)
         #
@@ -349,7 +356,43 @@ class Snatch3r(object):
         #     self.turn_degrees(-45, speed)
         #     self.current_x = self.current_x + x
         #     drive_x_axis = self.current_x
-        #     inches_to_drive_x = drive_x_axis / 12
+        #     inches_to_drive_x = drive_x_axis / 10
         #     self.drive_inches(inches_to_drive_x, speed)
         #     self.turn_degrees(45, speed)
 
+    def drive_inches_botwards(self, inches, speed):
+        """
+        Drives motors the given inches and the given speed backwards
+        """
+        print(inches)
+        pos = inches * 90
+        self.left_motor.run_to_rel_pos(position_sp=pos, speed_sp=speed,
+                                       stop_action="brake")
+        self.right_motor.run_to_rel_pos(position_sp=pos, speed_sp=speed,
+                                        stop_action="brake")
+
+    def drive_inches_bot(self, inches, speed):
+        """
+        Drives motors the given inches and the given speed Forwards
+        """
+        print(inches)
+        pos = inches * 90
+        self.left_motor.run_to_rel_pos(position_sp=-pos, speed_sp=speed,
+                                       stop_action="brake")
+        self.right_motor.run_to_rel_pos(position_sp=-pos, speed_sp=speed,
+                                        stop_action="brake")
+
+    def reset_xy(self):
+        """
+        Resets the bots Coordinates manually to (240,240) Used for testing
+        purposes.
+        """
+        self.current_y = 240
+        self.current_x = 240
+
+    def return_bot_origin(self):
+        """
+        Method used to make the robot return to its original position when it
+        was created.
+        """
+        self.drive_to_waypoint(self.origin_x, self.origin_y, 300)
