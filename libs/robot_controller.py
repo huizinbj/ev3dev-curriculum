@@ -18,7 +18,6 @@
 import ev3dev.ev3 as ev3
 import time
 import math
-import mqtt_remote_method_calls as com
 
 
 class Snatch3r(object):
@@ -41,7 +40,6 @@ class Snatch3r(object):
         self.pixy = ev3.Sensor(driver_name="pixy-lego")
         self.mqtt_client = None
 
-
         self.light_level = 90
         self.light_calibrated = False
         self.dark_calibrated = False
@@ -53,6 +51,8 @@ class Snatch3r(object):
         self.origin_y = 240
         self.current_x = 240
         self.current_y = 240
+        self.last_x = 240
+        self.last_y = 240
 
         assert self.arm_motor.connected
         assert self.left_motor.connected
@@ -63,6 +63,9 @@ class Snatch3r(object):
         # assert self.pixy.connected
 
     def set_mqtt_client(self, mqtt_client):
+        """
+       Creates the mqtt client variable for the ev3
+       """
         self.mqtt_client = mqtt_client
 
     def drive_inches(self, inches, speed):
@@ -288,8 +291,8 @@ class Snatch3r(object):
                 self.mqtt_client.send_message("obstructed")
                 self.stop()
                 break
-            if self.color_sensor.reflected_light_intensity < \
-                            self.dark_level + 10:
+            if self.color_sensor.reflected_light_intensity < self.dark_level \
+                    + 10:
                 self.drive_forward(300, 300)
             else:
                 self.turn_degrees(10, 300)
@@ -327,38 +330,42 @@ class Snatch3r(object):
         inches to drive forward and when to turn.
         """
         if self.current_y > y:
+            self.last_y = self.current_y
             print("Drive Forward")
             print("I was at:", self.current_x, self.current_y)
             drive_y_axis = self.current_y - y
             inches_to_drive_y = drive_y_axis/10
             print("I have to drive:", inches_to_drive_y)
-            self.current_y = y
             self.drive_inches_botwards(inches_to_drive_y, speed)
             print("Now Im here:", self.current_x, self.current_y)
+            self.current_y = y
 
         if self.current_y < y:
+            self.last_y = self.current_y
             print("Drive Backward")
             drive_y_axis = y - self.current_y
-            self.current_y = y
             inches_to_drive_y = drive_y_axis/10
             print("Conversion", inches_to_drive_y)
             self.drive_inches_bot(inches_to_drive_y, -speed)
+            self.current_y = y
 
         if self.current_x > x:
+            self.last_x = self.current_x
             self.turn_degrees(90, speed)
             drive_x_axis = self.current_x - x
             inches_to_drive_x = drive_x_axis / 10
-            self.current_x = x
             self.drive_inches(inches_to_drive_x, speed)
             self.turn_degrees(-90, speed)
+            self.current_x = x
 
         if self.current_x < x:
+            self.last_x = self.current_x
             self.turn_degrees(-90, speed)
             drive_x_axis = x - self.current_x
             inches_to_drive_x = drive_x_axis / 10
-            self.current_x = x
             self.drive_inches(inches_to_drive_x, speed)
             self.turn_degrees(90, speed)
+            self.current_x = x
 
     def drive_inches_botwards(self, inches, speed):
         """

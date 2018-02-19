@@ -22,6 +22,9 @@ def main():
     while not robot.touch_sensor.is_pressed:
         if robot.ir_sensor.proximity < 10:
             ev3.Sound.beep()
+            mqtt_client2.send_message("obstacle_in_way", robot.last_x,
+                                      robot.last_y, robot.current_x,
+                                      robot.current_y)
             ev3.Sound.speak("There is a Obstacle, Returning to origin").wait()
             time.sleep(1.5)
         time.sleep(0.1)
