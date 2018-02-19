@@ -16,11 +16,12 @@ class MyDelegate(object):
 
 def main():
 
-    # This Creates the Canvas
+    # This Creates the Remote
     root = tkinter.Tk()
     root.title("Mqtt Remote")
     tab_control = ttk.Notebook(root)
 
+    # Creates the Canvas
     root2 = tkinter.Toplevel()
     root2.title = "Canvas"
 
@@ -30,7 +31,6 @@ def main():
     canvas = tkinter.Canvas(main_frame, background="lightgray", width=480,
                             height=480)
     canvas.grid(columnspan=2)
-
 
     # Creates The Mqtt_client for the canvas
     my_delegate = MyDelegate(canvas)
@@ -171,6 +171,9 @@ def main():
 
 
 def left_click(event, mqtt_client, mqtt_client2):
+    """Creates a waypoint on the canvas and calls the robot's method
+    drive_to_waypoint.
+    """
     print(event.x, event.y)
     canvas = event.widget
     canvas.create_oval(event.x - 5, event.y - 5, event.x + 5, event.y +
@@ -228,10 +231,11 @@ def send_right(mqtt_client, left_speed, right_speed):
 
 def bot_origin(mqtt_client):
     """Mqtt message that calls for the robots origin to be reset"""
-    mqtt_client.send_message("reset_xy")
+    mqtt_client.send_message("return_bot_origin")
 
 
 def quit_program(mqtt_client):
+    """Closes the mqtt client that forms the GUI"""
     if mqtt_client:
         mqtt_client.close()
     exit()
