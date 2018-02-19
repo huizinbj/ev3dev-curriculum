@@ -18,7 +18,6 @@
 import ev3dev.ev3 as ev3
 import time
 import math
-import mqtt_remote_method_calls as com
 
 
 class Snatch3r(object):
@@ -39,8 +38,7 @@ class Snatch3r(object):
         self.ir_sensor = ev3.InfraredSensor()
         self.beacon_seeker = ev3.BeaconSeeker(channel=1)
         self.pixy = ev3.Sensor(driver_name="pixy-lego")
-        self.mqtt_client = com.MqttClient(self)
-        self.mqtt_client.connect_to_pc()
+        self.mqtt_client = None
 
         self.light_level = 90
         self.light_calibrated = False
@@ -53,6 +51,8 @@ class Snatch3r(object):
         self.origin_y = 240
         self.current_x = 240
         self.current_y = 240
+        self.last_x = 240
+        self.last_y = 240
 
         assert self.arm_motor.connected
         assert self.left_motor.connected
@@ -60,12 +60,19 @@ class Snatch3r(object):
         assert self.touch_sensor.connected
         assert self.color_sensor.connected
         assert self.ir_sensor.connected
-        assert self.pixy.connected
+        # assert self.pixy.connected
+
+    def set_mqtt_client(self, mqtt_client):
+        """
+       Creates the mqtt client variable for the ev3
+       """
+        self.mqtt_client = mqtt_client
 
     def drive_inches(self, inches, speed):
         """
         Drives motors the given inches and the given speed
         """
+        print(inches)
         pos = inches * 90
         self.left_motor.run_to_rel_pos(position_sp=pos, speed_sp=-speed,
                                        stop_action="brake")
@@ -284,8 +291,8 @@ class Snatch3r(object):
                 self.mqtt_client.send_message("obstructed")
                 self.stop()
                 break
-            if self.color_sensor.reflected_light_intensity < \
-                            self.dark_level + 10:
+            if self.color_sensor.reflected_light_intensity < self.dark_level \
+                    + 10:
                 self.drive_forward(300, 300)
             else:
                 self.turn_degrees(10, 300)
@@ -318,41 +325,81 @@ class Snatch3r(object):
 
     def drive_to_waypoint(self, x, y, speed):
         """
-        Drives motors the waypoint recieved by a canvas click. It determines
+        Drives motors the waypoint received by a canvas click. It determines
         where to drive by calculating the difference and converting it to
         inches to drive forward and when to turn.
         """
-        if self.current_x < x:
-            self.current_x = self.current_x + x
-        if self.current_x > x:
-            self.current_x = self.current_x - x
+        if self.current_y > y:
+            self.last_y = self.current_y
+            print("Drive Forward")
+            print("I was at:", self.current_x, self.current_y)
+            drive_y_axis = self.current_y - y
+            inches_to_drive_y = drive_y_axis/10
+            print("I have to drive:", inches_to_drive_y)
+            self.drive_inches_botwards(inches_to_drive_y, speed)
+            print("Now Im here:", self.current_x, self.current_y)
+            self.current_y = y
+
         if self.current_y < y:
-            self.current_y = self.current_y + y
-        if self.current_x > y:
-            self.current_x = self.current_x - y
-        drive_x_axis = self.current_x
-        drive_y_axis = self.current_y
+            self.last_y = self.current_y
+            print("Drive Backward")
+            drive_y_axis = y - self.current_y
+            inches_to_drive_y = drive_y_axis/10
+            print("Conversion", inches_to_drive_y)
+            self.drive_inches_bot(inches_to_drive_y, -speed)
+            self.current_y = y
 
-        inches_to_drive_x = drive_x_axis/48
-        inches_to_drive_y = drive_y_axis/48
+        if self.current_x > x:
+            self.last_x = self.current_x
+            self.turn_degrees(90, speed)
+            drive_x_axis = self.current_x - x
+            inches_to_drive_x = drive_x_axis / 10
+            self.drive_inches(inches_to_drive_x, speed)
+            self.turn_degrees(-90, speed)
+            self.current_x = x
 
-        self.drive_inches(inches_to_drive_x, speed)
-        print("Good")
+        if self.current_x < x:
+            self.last_x = self.current_x
+            self.turn_degrees(-90, speed)
+            drive_x_axis = x - self.current_x
+            inches_to_drive_x = drive_x_axis / 10
+            self.drive_inches(inches_to_drive_x, speed)
+            self.turn_degrees(90, speed)
+            self.current_x = x
 
+    def drive_inches_botwards(self, inches, speed):
+        """
+        Drives motors the given inches and the given speed backwards
+        """
+        print(inches)
+        pos = inches * 90
+        self.left_motor.run_to_rel_pos(position_sp=pos, speed_sp=speed,
+                                       stop_action="brake")
+        self.right_motor.run_to_rel_pos(position_sp=pos, speed_sp=speed,
+                                        stop_action="brake")
 
+    def drive_inches_bot(self, inches, speed):
+        """
+        Drives motors the given inches and the given speed Forwards
+        """
+        print(inches)
+        pos = inches * 90
+        self.left_motor.run_to_rel_pos(position_sp=-pos, speed_sp=speed,
+                                       stop_action="brake")
+        self.right_motor.run_to_rel_pos(position_sp=-pos, speed_sp=speed,
+                                        stop_action="brake")
 
+    def reset_xy(self):
+        """
+        Resets the bots Coordinates manually to (240,240) Used for testing
+        purposes.
+        """
+        self.current_y = 240
+        self.current_x = 240
 
-
-        # pos = inches * 90
-        # self.left_motor.run_to_rel_pos(position_sp=pos, speed_sp=-speed,
-        #                                stop_action="brake")
-        # self.right_motor.run_to_rel_pos(position_sp=pos, speed_sp=-speed,
-        #                                 stop_action="brake")
-        #
-        # self.left_motor.wait_while(ev3.Motor.STATE_RUNNING)
-        # self.right_motor.wait_while(ev3.Motor.STATE_RUNNING)
-        #
-        # self.current_x = self.current_x + math.cos(self.degrees_turned *
-        #                                    math.pi/180) * pos
-        # self.current_x = self.current_x + math.sin(self.degrees_turned *
-        #                                    math.pi/180) * pos
+    def return_bot_origin(self):
+        """
+        Method used to make the robot return to its original position when it
+        was created.
+        """
+        self.drive_to_waypoint(self.origin_x, self.origin_y, 300)
