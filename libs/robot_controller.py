@@ -326,7 +326,6 @@ class Snatch3r(object):
         where to drive by calculating the difference and converting it to
         inches to drive forward and when to turn.
         """
-        print("Go to", x, y)
         if self.current_y > y:
             print("Drive Forward")
             print("I was at:", self.current_x, self.current_y)
@@ -344,8 +343,6 @@ class Snatch3r(object):
             inches_to_drive_y = drive_y_axis/10
             print("Conversion", inches_to_drive_y)
             self.drive_inches_bot(inches_to_drive_y, -speed)
-
-            time.sleep(5)
 
         if self.current_x > x:
             self.turn_degrees(90, speed)
