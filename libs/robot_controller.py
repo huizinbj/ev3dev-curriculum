@@ -39,8 +39,8 @@ class Snatch3r(object):
         self.ir_sensor = ev3.InfraredSensor()
         self.beacon_seeker = ev3.BeaconSeeker(channel=1)
         self.pixy = ev3.Sensor(driver_name="pixy-lego")
-        self.mqtt_client = com.MqttClient(self)
-        self.mqtt_client.connect_to_pc()
+        self.mqtt_client = None
+
 
         self.light_level = 90
         self.light_calibrated = False
@@ -61,6 +61,9 @@ class Snatch3r(object):
         assert self.color_sensor.connected
         assert self.ir_sensor.connected
         # assert self.pixy.connected
+
+    def set_mqtt_client(self, mqtt_client):
+        self.mqtt_client = mqtt_client
 
     def drive_inches(self, inches, speed):
         """
@@ -319,21 +322,20 @@ class Snatch3r(object):
 
     def drive_to_waypoint(self, x, y, speed):
         """
-        Drives motors the waypoint recieved by a canvas click. It determines
+        Drives motors the waypoint received by a canvas click. It determines
         where to drive by calculating the difference and converting it to
         inches to drive forward and when to turn.
         """
         # print("Go to", x, y)
         if self.current_y > y:
-            print("Where is X", self.current_x, "Y", self.current_y)
             print("Drive Forward")
+            print("I was at:", self.current_x, self.current_y)
             drive_y_axis = self.current_y - y
             inches_to_drive_y = drive_y_axis/10
-            print("Conversion", inches_to_drive_y)
+            print("I have to drive:", inches_to_drive_y)
             self.current_y = y
             self.drive_inches_botwards(inches_to_drive_y, speed)
-            print("X is Here", self.current_x, "Y", self.current_y)
-
+            print("Now Im here:", self.current_x, self.current_y)
 
         if self.current_y < y:
             print("Drive Backward")
@@ -343,12 +345,11 @@ class Snatch3r(object):
             print("Conversion", inches_to_drive_y)
             self.drive_inches_bot(inches_to_drive_y, -speed)
 
-
-        # if self.current_x < x:
+        # if self.current_x > x:
         #     self.turn_degrees(45, speed)
-        #     self.current_x = self.current_x + x
-        #     drive_x_axis = self.current_x
+        #     drive_x_axis = self.current_x - x
         #     inches_to_drive_x = drive_x_axis / 10
+        #     self.current_x = x
         #     self.drive_inches(inches_to_drive_x, speed)
         #     self.turn_degrees(-45, speed)
         #

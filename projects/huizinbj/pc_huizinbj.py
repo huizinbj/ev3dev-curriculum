@@ -17,7 +17,11 @@ class MyDelegate(object):
 def main():
 
     # This Creates the Canvas
-    root2 = tkinter.Tk()
+    root = tkinter.Tk()
+    root.title("Mqtt Remote")
+    tab_control = ttk.Notebook(root)
+
+    root2 = tkinter.Toplevel()
     root2.title = "Canvas"
 
     main_frame = ttk.Frame(root2, padding=5)
@@ -26,6 +30,7 @@ def main():
     canvas = tkinter.Canvas(main_frame, background="lightgray", width=480,
                             height=480)
     canvas.grid(columnspan=2)
+
 
     # Creates The Mqtt_client for the canvas
     my_delegate = MyDelegate(canvas)
@@ -54,10 +59,10 @@ def main():
     clear_button.grid(row=3, column=0)
     clear_button["command"] = lambda: clear(canvas)
 
-    # This Creates the Mqtt Remote GUI and Buttons
-    root = Tk()
-    root.title("Mqtt Remote")
-    tab_control = ttk.Notebook(root)
+    # # This Creates the Mqtt Remote GUI and Buttons
+    # root = tkinter.Toplevel()
+    # root.title("Mqtt Remote")
+    # tab_control = ttk.Notebook(root)
 
     # Creates Tab One
     tab1 = ttk.Frame(tab_control)  # Create a tab
@@ -163,7 +168,6 @@ def main():
 
     # Keeps the Gui Running
     root.mainloop()
-    canvas.mainloop()
 
 
 def left_click(event, mqtt_client, mqtt_client2):
@@ -181,45 +185,50 @@ def clear(canvas):
 
 # Arm command callbacks for mqtt_client
 def send_up(mqtt_client):
-    """Sen"""
+    """Mqtt message that calls for the robot arm to go up"""
     print("arm_up")
     mqtt_client.send_message("arm_up")
 
 
 def send_down(mqtt_client):
+    """Mqtt message that calls for the robot arm to go down"""
     print("arm_down")
     mqtt_client.send_message("arm_down")
 
 
 def send_forward(mqtt_client, left_speed, right_speed):
+    """Mqtt message that calls for the robot to drive forward"""
     print("drive_forward")
     mqtt_client.send_message("drive_forward", [left_speed, right_speed])
 
 
 def stopbot(mqtt_client):
+    """Mqtt message that calls for the robot to stop"""
     print("stop")
     mqtt_client.send_message("stop")
 
 
 def send_back(mqtt_client, left_speed, right_speed):
+    """Mqtt message that calls for the robot to drive backward"""
     print("drive_back")
     mqtt_client.send_message("drive_forward", [-left_speed, -right_speed])
 
 
 def send_left(mqtt_client, left_speed, right_speed):
+    """Mqtt message that calls for the robot turn left"""
     print("drive_left")
     mqtt_client.send_message("drive_forward", [-left_speed, right_speed])
 
 
 def send_right(mqtt_client, left_speed, right_speed):
+    """Mqtt message that calls for the robot to turn right"""
     print("drive_right")
     mqtt_client.send_message("drive_forward", [left_speed, -right_speed])
 
 
 def bot_origin(mqtt_client):
+    """Mqtt message that calls for the robots origin to be reset"""
     mqtt_client.send_message("reset_xy")
-
-
 
 
 def quit_program(mqtt_client):

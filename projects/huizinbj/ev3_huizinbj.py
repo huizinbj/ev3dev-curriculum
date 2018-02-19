@@ -19,6 +19,7 @@ def main():
     robot = robo.Snatch3r()
 
     mqtt_client2 = com.MqttClient(robot)
+    robot.set_mqtt_client(mqtt_client2)
     mqtt_client2.connect_to_pc()
 
     robot.loop_forever()
