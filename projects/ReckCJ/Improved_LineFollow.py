@@ -1,11 +1,10 @@
 """This project's purpose is to have the robot follow a line which may (or
 may not) change colors at any point and recalibrate the color sensor as
 necessary. Additionally, the robot will sense obstacles in its path and
-either move them or simply circumvent them, and wil be able to return to its
-original position on command, and have a couple "personality" movement commands
+either move them or simply circumvent them, and have a couple "personality"
+movement commands
 
-Entry Box Commands: "Return to start"
-                    "About Face"
+Entry Box Commands: "About Face"
 
                     "Go around"
                     "Move object"
@@ -13,7 +12,6 @@ Entry Box Commands: "Return to start"
 Authors: Cory Reck, utilizing robot_controller library as written by Brett
 Huizinga and Cory Reck"""
 
-import ev3dev.ev3 as ev3
 import time
 import tkinter
 from tkinter import ttk
@@ -21,12 +19,21 @@ from tkinter import ttk
 import mqtt_remote_method_calls as com
 
 
+class MyDelegate(object):
+    def __init__(self):
+        self.robot_obstructed = False
+
+    def obstructed(self):
+        self.robot_obstructed = True
+
+
 def main():
     print("--------------------------------------------")
     print("Advanced Line Following with user commands")
     print("--------------------------------------------")
 
-    mqtt_client = com.MqttClient()
+    delegate = MyDelegate()
+    mqtt_client = com.MqttClient(delegate)
     mqtt_client.connect_to_ev3()
 
     root = tkinter.Tk()
@@ -50,13 +57,17 @@ def main():
     move_entry_submit['command'] = lambda: send_move_comand(mqtt_client,
                                                             movement_entry_box)
 
-    stop_button = ttk.Button(tab_1, text="Stop")
+    stop_button = ttk.Button(tab_1, text="Stop Following")
     stop_button.grid(row=0, column=1)
     stop_button['command'] = lambda: send_stop(mqtt_client)
 
     uturn_button = ttk.Button(tab_1, text="U-turn")
     uturn_button.grid(row=1, column=1)
     uturn_button['command'] = lambda: send_uturn(mqtt_client)
+
+    follow_button = ttk.Button(tab_1, text="Follow Line")
+    follow_button.grid(row=0, column=2)
+    follow_button['command'] = lambda: send_follow(mqtt_client)
 
     shutdown_button = ttk.Button(tab_1, text="Shutdown")
     shutdown_button.grid(row=1, column=2)
@@ -68,8 +79,9 @@ def main():
     obstacle_entry_box.grid(row=1, column=0)
     obstacle_submit = ttk.Button(tab_2, text="Obstacle Submit")
     obstacle_submit.grid(row=2, column=0)
-    obstacle_submit['command'] = lambda: send_move_comand(mqtt_client,
-                                                          obstacle_entry_box)
+    obstacle_submit['command'] = lambda: send_obstacle_command(mqtt_client,
+                                                          obstacle_entry_box,
+                                                          delegate)
 
     light_button = ttk.Button(tab_2, text="Calibrate Light")
     light_button.grid(row=0, column=2)
@@ -125,6 +137,11 @@ def send_shutdown(mqtt_client):
     mqtt_client.send_message("shutdown")
 
 
+def send_follow(mqtt_client):
+    print("Following the Line")
+    mqtt_client.send_message("line_follow")
+
+
 def send_move_comand(mqtt_client, entry_box):
     if entry_box.get() == "Return to start":
         print("Returning to starting point")
@@ -138,17 +155,18 @@ def send_move_comand(mqtt_client, entry_box):
         mqtt_client.send_message("wrong_input")
 
 
-def send_obstacle_command(mqtt_client, entry_box):
-    if entry_box.get() == "Go around":
-        ev3.Sound.speak("Going Around")
-        mqtt_client.send_message("go_around")
-    elif entry_box.get() == "Move Object":
-        ev3.Sound.speak("Moving The Object")
-        mqtt_client.send_message("move_obstruction")
-        time.sleep(3)
+def send_obstacle_command(mqtt_client, entry_box, delegate):
+    if delegate.robot_obstructed:
+        if entry_box.get() == "Go around":
+            mqtt_client.send_message("go_around")
+        elif entry_box.get() == "Move Object":
+            mqtt_client.send_message("move_obstruction")
+            time.sleep(3)
+        else:
+            print("Incorrect Command")
+            mqtt_client.send_message("wrong_input")
     else:
-        print("Incorrect Command")
-        mqtt_client.send_message("wrong_input")
+        print("No obstruction")
 
 
 main()
