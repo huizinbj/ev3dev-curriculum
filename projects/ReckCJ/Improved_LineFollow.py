@@ -20,6 +20,9 @@ import mqtt_remote_method_calls as com
 
 
 class MyDelegate(object):
+    """Simple delegate object class created for the purpose of receiving a
+    message that the robot has encountered an obstruction to allow
+    obstruction messages to be handled properly."""
     def __init__(self):
         self.robot_obstructed = False
 
@@ -59,7 +62,8 @@ def main():
 
     stop_button = ttk.Button(tab_1, text="Stop Following")
     stop_button.grid(row=0, column=1)
-    stop_button['command'] = lambda: send_stop(mqtt_client)
+    # stop_button['command'] = lambda: send_stop(mqtt_client)
+    # TODO: Implement secondary MQTTClient to handle loop interruptions
 
     uturn_button = ttk.Button(tab_1, text="U-turn")
     uturn_button.grid(row=1, column=1)
@@ -103,49 +107,62 @@ def main():
 
 
 def send_light(mqtt_client):
+    """Sends a message to the robot to calibrate the 'light' value"""
     print("Calibrate Light")
     mqtt_client.send_message("calibrate_light")
 
 
 def send_dark(mqtt_client):
+    """Sends a message to the robot to calibrate the 'dark' value"""
     print("Calibrate Dark")
     mqtt_client.send_message("calibrate_dark")
 
 
 def send_wave(mqtt_client):
+    """Personality command, sends the robot a message to wave using the arm
+    motor"""
     print("Waving Hello!")
     mqtt_client.send_message("wave_hello", [5])
 
 
 def send_flex(mqtt_client):
+    """Personality command, sends the robot a message to flex the claw"""
     print("Flexing that claw")
     mqtt_client.send_message("flex", [2])
 
 
 def send_stop(mqtt_client):
+    """Sends a message to the robot to stop moving"""
     print("Stopping the Bot")
     mqtt_client.send_message("stop")
 
 
 def send_uturn(mqtt_client):
+    """Sends a message to the robot to turn around completely"""
     print("U-Turn")
     mqtt_client.send_message("turn_degrees", [180, 300])
 
 
 def send_shutdown(mqtt_client):
+    """Sends a message to the robot to break the loop_forever and cease the
+    robot program"""
     print("Shutting Down")
     mqtt_client.send_message("shutdown")
 
 
 def send_follow(mqtt_client):
+    """Sends a message to begin following the line"""
     print("Following the Line")
     mqtt_client.send_message("line_follow")
 
 
 def send_move_comand(mqtt_client, entry_box):
+    """Sends a message to the robot for certain movement commands based upon
+    what is in the entry box. In the case that a command is not recognized,
+    sends a message that causes an audible indicator of error"""
     if entry_box.get() == "Return to start":
         print("Returning to starting point")
-        mqtt_client.send_message("return_start")
+        # mqtt_client.send_message("return_start")
     elif entry_box.get() == "About Face":
         print("Standing at attention for 3 seconds")
         mqtt_client.send_message("turn_degrees", [90, 300])
@@ -156,6 +173,9 @@ def send_move_comand(mqtt_client, entry_box):
 
 
 def send_obstacle_command(mqtt_client, entry_box, delegate):
+    """If there is an obstruction in the way of the robot, sends messages to
+    the robot regarding how to handle said obstruction. If not, prints a
+    statement that there is no obstruction in the console."""
     if delegate.robot_obstructed:
         if entry_box.get() == "Go around":
             mqtt_client.send_message("go_around")
