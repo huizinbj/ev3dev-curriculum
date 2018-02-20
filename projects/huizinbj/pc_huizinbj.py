@@ -4,8 +4,6 @@ import mqtt_remote_method_calls as com
 
 
 def main():
-
-
     # This Creates the Remote
     root = tkinter.Tk()
     root.title("Mqtt Remote")
@@ -18,6 +16,7 @@ def main():
     main_frame = ttk.Frame(root2, padding=5)
     main_frame.grid()
 
+    # Creates the canvas
     canvas = tkinter.Canvas(main_frame, background="lightgray", width=480,
                             height=480)
     canvas.grid(columnspan=2)
@@ -141,11 +140,6 @@ def main():
     quit_button.grid(row=0, column=0)
     quit_button['command'] = (lambda: quit_program(mqtt_client2))
 
-    # End Button on Gui
-    end_button = ttk.Button(tab3, text="Exit")
-    end_button.grid(row=1, column=0)
-    end_button['command'] = (lambda: quit_program(mqtt_client2))
-
     # Keeps the Gui Running
     root.mainloop()
 
@@ -154,7 +148,6 @@ def left_click(event, mqtt_client2, canvas):
     """Creates a waypoint on the canvas and calls the robot's method
     drive_to_waypoint.
     """
-
     clear(canvas)
     print(event.x, event.y)
     canvas.create_oval(event.x - 5, event.y - 5, event.x + 5, event.y +
@@ -165,6 +158,7 @@ def left_click(event, mqtt_client2, canvas):
 def obstacle_in_way(mqtt_client):
     print("This way is Blocked")
     mqtt_client.send_message("drive_to_waypoint", [240, 240, 300])
+
 
 def clear(canvas):
     """Clears the canvas of all the waypoints and lines"""
@@ -222,15 +216,12 @@ def bot_origin(mqtt_client, canvas):
                        5, fill="red", width=1)
     mqtt_client.send_message("return_bot_origin")
 
-def handle_up_button(button_state):
-    """Handle IR / button event."""
-    print("eh")
-
 
 def quit_program(mqtt_client):
     """Closes the mqtt client that forms the GUI"""
     if mqtt_client:
         mqtt_client.close()
     exit()
+
 
 main()
