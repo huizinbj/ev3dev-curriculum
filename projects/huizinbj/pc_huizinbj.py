@@ -1,20 +1,10 @@
 import tkinter
 from tkinter import ttk
-from tkinter import *
 import mqtt_remote_method_calls as com
 
 
-class MyDelegate(object):
-
-    def __init__(self, canvas):
-        self.canvas = canvas
-
-    def on_circle_draw(self, color, x, y):
-        self.canvas.create_oval(x - 10, y - 10, x + 10, y + 10, fill=color,
-                                width=3)
-
-
 def main():
+
 
     # This Creates the Remote
     root = tkinter.Tk()
@@ -32,37 +22,27 @@ def main():
                             height=480)
     canvas.grid(columnspan=2)
 
-    # Creates The Mqtt_client for the canvas
-    my_delegate = MyDelegate(canvas)
-    mqtt_client = com.MqttClient(my_delegate)
-    mqtt_client.connect("draw", "draw")
-
     # Creates The Mqtt_client for the ev3
     mqtt_client2 = com.MqttClient()
     mqtt_client2.connect_to_ev3()
 
     # Creates the left click on the Canvas
-    canvas.bind("<Button-1>", lambda event: left_click(event, mqtt_client,
-                                                       mqtt_client2))
+    canvas.bind("<Button-1>", lambda event: left_click(event, mqtt_client2,
+                                                       canvas))
 
     # Quit Button on Canvas
     quit_button = ttk.Button(main_frame, text="Quit")
     quit_button.grid(row=3, column=1)
-    quit_button["command"] = lambda: quit_program(mqtt_client)
+    quit_button["command"] = lambda: quit_program(mqtt_client2)
 
     origin_button = ttk.Button(main_frame, text="Origin")
     origin_button.grid(row=2, column=1)
-    origin_button["command"] = lambda: bot_origin(mqtt_client2)
+    origin_button["command"] = lambda: bot_origin(mqtt_client2, canvas)
 
     # Clear Button on the Canvas
     clear_button = ttk.Button(main_frame, text="Clear")
     clear_button.grid(row=3, column=0)
     clear_button["command"] = lambda: clear(canvas)
-
-    # # This Creates the Mqtt Remote GUI and Buttons
-    # root = tkinter.Toplevel()
-    # root.title("Mqtt Remote")
-    # tab_control = ttk.Notebook(root)
 
     # Creates Tab One
     tab1 = ttk.Frame(tab_control)  # Create a tab
@@ -170,19 +150,24 @@ def main():
     root.mainloop()
 
 
-def left_click(event, mqtt_client, mqtt_client2):
+def left_click(event, mqtt_client2, canvas):
     """Creates a waypoint on the canvas and calls the robot's method
     drive_to_waypoint.
     """
+
+    clear(canvas)
     print(event.x, event.y)
-    canvas = event.widget
     canvas.create_oval(event.x - 5, event.y - 5, event.x + 5, event.y +
                        5, fill="red", width=1)
     mqtt_client2.send_message("drive_to_waypoint", [event.x, event.y, 300])
 
 
+def obstacle_in_way(mqtt_client):
+    print("This way is Blocked")
+    mqtt_client.send_message("drive_to_waypoint", [240, 240, 300])
+
 def clear(canvas):
-    """Clears the canvas of all the waypoints"""
+    """Clears the canvas of all the waypoints and lines"""
     canvas.delete("all")
 
 
@@ -229,9 +214,17 @@ def send_right(mqtt_client, left_speed, right_speed):
     mqtt_client.send_message("drive_forward", [left_speed, -right_speed])
 
 
-def bot_origin(mqtt_client):
+def bot_origin(mqtt_client, canvas):
     """Mqtt message that calls for the robots origin to be reset"""
+    clear(canvas)
+    print(240, 240)
+    canvas.create_oval(240 - 5, 240 - 5, 240 + 5, 240 +
+                       5, fill="red", width=1)
     mqtt_client.send_message("return_bot_origin")
+
+def handle_up_button(button_state):
+    """Handle IR / button event."""
+    print("eh")
 
 
 def quit_program(mqtt_client):
@@ -239,9 +232,5 @@ def quit_program(mqtt_client):
     if mqtt_client:
         mqtt_client.close()
     exit()
-
-def obstacle_in_way(mqtt_client):
-    print("OBJECT")
-
 
 main()

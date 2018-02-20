@@ -162,7 +162,6 @@ class Snatch3r(object):
         """
         Stops the Snatchers motors to cease them from moving.
         """
-        print('sanity test')
         self.left_motor.stop(stop_action='brake')
         self.right_motor.stop(stop_action='brake')
         ev3.Sound.speak("Stopping")
@@ -340,7 +339,7 @@ class Snatch3r(object):
             print("Now Im here:", self.current_x, self.current_y)
             self.current_y = y
 
-        if self.current_y < y:
+        elif self.current_y < y:
             self.last_y = self.current_y
             print("Drive Backward")
             drive_y_axis = y - self.current_y
@@ -348,6 +347,9 @@ class Snatch3r(object):
             print("Conversion", inches_to_drive_y)
             self.drive_inches_bot(inches_to_drive_y, -speed)
             self.current_y = y
+
+        while self.left_motor.state and self.right_motor.state:
+            time.sleep(0.01)
 
         if self.current_x > x:
             self.last_x = self.current_x
@@ -358,7 +360,7 @@ class Snatch3r(object):
             self.turn_degrees(-90, speed)
             self.current_x = x
 
-        if self.current_x < x:
+        elif self.current_x < x:
             self.last_x = self.current_x
             self.turn_degrees(-90, speed)
             drive_x_axis = x - self.current_x
@@ -366,6 +368,7 @@ class Snatch3r(object):
             self.drive_inches(inches_to_drive_x, speed)
             self.turn_degrees(90, speed)
             self.current_x = x
+
 
     def drive_inches_botwards(self, inches, speed):
         """
