@@ -62,8 +62,7 @@ def main():
 
     stop_button = ttk.Button(tab_1, text="Stop Following")
     stop_button.grid(row=0, column=1)
-    # stop_button['command'] = lambda: send_stop(mqtt_client)
-    # TODO: Implement secondary MQTTClient to handle loop interruptions
+    stop_button['command'] = lambda: send_stop(mqtt_client)
 
     uturn_button = ttk.Button(tab_1, text="U-turn")
     uturn_button.grid(row=1, column=1)
