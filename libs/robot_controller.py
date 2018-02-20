@@ -279,6 +279,7 @@ class Snatch3r(object):
         indefinitely, recalibrating the dark color as it follows the line so a
         line of changing color can still be followed. The light color must
         remain constant for this to function properly."""
+        turned = 0
         while True:
             if not self.light_calibrated or not self.dark_calibrated:
                 break
@@ -295,9 +296,16 @@ class Snatch3r(object):
                     + 10:
                 self.drive_forward(300, 300)
             else:
-                self.turn_degrees(10, 300)
-                time.sleep(0.1)
-                self.dark_level = self.color_sensor.reflected_light_intensity
+                if turned < 40:
+                    self.turn_degrees(10, 300)
+                    time.sleep(0.1)
+                    turned = turned + 10
+                else:
+                    self.turn_degrees(-10, 300)
+                    time.sleep(0.1)
+                if not self.color_sensor.color == ev3.ColorSensor.COLOR_WHITE:
+                    self.dark_level=self.color_sensor.reflected_light_intensity
+                    turned = 0
 
     def wrong_input(self):
         """In the case of an incorrect command entry, gives audio cue of the
