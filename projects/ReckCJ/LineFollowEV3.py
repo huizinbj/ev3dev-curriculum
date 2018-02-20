@@ -16,40 +16,76 @@ class ListenerDelegate(object):
         self.robot = robot
         self.mqtt_client = self.robot.mqtt_client
 
-    def send_light(self):
+    def drive_inches(self, inches, speed):
         pass
 
-    def send_dark(self):
+    def turn_degrees(self, degrees_to_turn, turn_speed_sp):
         pass
 
-    def send_wave(self):
+    def arm_calibration(self):
         pass
 
-    def send_flex(self):
+    def arm_up(self):
         pass
 
-    def send_stop(self):
-        """Secondary MQTTClient receives message through follow loop to
-        stop the robot"""
-        print("Stopping the Bot")
-        self.robot.stop()
-
-    def send_uturn(self):
+    def arm_down(self):
         pass
 
-    def send_shutdown(self):
-        """Secondary MQTTClient receives message through follow loop to
-        shutdown the robot"""
-        print("Shutting Down")
+    def shutdown(self):
         self.robot.shutdown()
 
-    def send_follow(self):
+    def loop_forever(self):
         pass
 
-    def send_move_comand(self):
+    def stop(self):
+        self.robot.stop()
+
+    def drive_forward(self, leftspeed, rightspeed):
         pass
 
-    def send_obstacle_command(self):
+    def seek_beacon(self):
+        pass
+
+    def calibrate_light(self):
+        pass
+
+    def calibrate_dark(self):
+        pass
+
+    def wave_hello(self, n):
+        pass
+
+    def flex(self, n):
+        pass
+
+    def return_start(self):
+        pass
+
+    def line_follow(self):
+        pass
+
+    def wrong_input(self):
+        pass
+
+    def move_obstruction(self):
+        pass
+
+    def go_around(self):
+        pass
+
+    def drive_to_waypoint(self, x, y, speed):
+        pass
+
+    def drive_inches_botwards(self, inches, speed):
+        pass
+
+    def drive_inches_bot(self, inches, speed):
+        pass
+
+    def reset_xy(self):
+        pass
+
+    def return_bot_origin(self):
         pass
 
 
@@ -58,8 +94,11 @@ def main():
 
     robot = robo.Snatch3r()
     stopper_delegate = ListenerDelegate(robot)
-    mqtt_cleint_stop = com.MqttClient(stopper_delegate)
-    mqtt_cleint_stop.connect_to_pc()
+    mqtt_client_stop = com.MqttClient(stopper_delegate)
+    mqtt_client_stop.connect_to_pc()
+    regular_client = com.MqttClient(robot)
+    robot.set_mqtt_client(regular_client)
+    regular_client.connect_to_pc()
     robot.loop_forever()
 
 

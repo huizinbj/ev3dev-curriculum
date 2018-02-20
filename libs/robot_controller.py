@@ -46,6 +46,7 @@ class Snatch3r(object):
         self.dark_level = 10
 
         self.obstructed = False
+        self.is_stopped = True
 
         self.origin_x = 240
         self.origin_y = 240
@@ -165,6 +166,7 @@ class Snatch3r(object):
         self.left_motor.stop(stop_action='brake')
         self.right_motor.stop(stop_action='brake')
         ev3.Sound.speak("Stopping")
+        self.is_stopped = True
 
     def drive_forward(self, leftspeed, rightspeed):
         """
@@ -173,6 +175,7 @@ class Snatch3r(object):
         """
         self.left_motor.run_forever(speed_sp=leftspeed)
         self.right_motor.run_forever(speed_sp=rightspeed)
+        self.is_stopped = False
 
     def seek_beacon(self):
         """
@@ -279,31 +282,34 @@ class Snatch3r(object):
         line of changing color can still be followed. The light color must
         remain constant for this to function properly."""
         turned = 0
+        self.obstructed = False
+        if not self.light_calibrated or not self.dark_calibrated:
+            return
         while True:
-            if not self.light_calibrated or not self.dark_calibrated:
-                break
             if self.touch_sensor.is_pressed:
                 self.stop()
                 break
-            elif self.ir_sensor.proximity < 10:
+            elif self.ir_sensor.proximity < 1:
                 ev3.Sound.speak("Obstruction")
                 self.obstructed = True
                 self.mqtt_client.send_message("obstructed")
                 self.stop()
                 break
-            if self.color_sensor.reflected_light_intensity < self.dark_level \
-                    + 10:
-                self.drive_forward(300, 300)
+            if self.is_stopped:
+                break
+            light_intensity = self.color_sensor.reflected_light_intensity
+            if light_intensity < self.dark_level + 10:
+                self.drive_forward(100, 100)
             else:
-                if turned < 40:
-                    self.turn_degrees(10, 300)
+                if turned < 60:
+                    self.turn_degrees(10, 100)
                     time.sleep(0.1)
                     turned = turned + 10
                 else:
-                    self.turn_degrees(-10, 300)
+                    self.turn_degrees(-10, 100)
                     time.sleep(0.1)
-                if not self.color_sensor.color == ev3.ColorSensor.COLOR_WHITE:
-                    self.dark_level=self.color_sensor.reflected_light_intensity
+                if light_intensity < self.light_level - 10:
+                    self.dark_level = light_intensity
                     turned = 0
 
     def wrong_input(self):
