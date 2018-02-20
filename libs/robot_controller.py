@@ -377,7 +377,6 @@ class Snatch3r(object):
             self.turn_degrees(90, speed)
             self.current_x = x
 
-
     def drive_inches_botwards(self, inches, speed):
         """
         Drives motors the given inches and the given speed backwards
